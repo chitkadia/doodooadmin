@@ -1,0 +1,37 @@
+###
+# Phases to carry out for migration process
+###
+
+1.  Pre Migration Scripts # 3 min 2 sec
+2.  Import Users # 2 sec
+3.  Import Settings # 3 sec
+4.  Import User Roles and Resources # 19 sec
+5.  Import Billing  # not now
+6.  Import Email Accounts # 3 sec
+7.  Import Companies # 6 sec
+8.  Import Contacts # 2 min 6 sec
+9.  Import Documents # 10 sec
+10. Import Document Sets # not now
+11. Import Templates # 66 sec
+12. Import Emails # 1h 24m
+13. Import Campaigns # running (dependent on contact)
+14. Import Activities # running (dont run email and activity parallel)
+N.  Post Migration Scripts
+
+
+Notes
+------------------------------
+- Check plan_master table
+- Check resource_master
+- Check role_default_resources
+
+
+To Do
+------------------------------
+- Script for generating passwords
+- Procedure for email recipients
+- Procedure for campaign recipients
+- Procedure for campaign urls
+- Check how to set outlook sending methods for emails
+- Update last opened by and last opened at for document and document links
+- Script for generating link_code for document links

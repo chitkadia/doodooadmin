@@ -1,0 +1,278 @@
+server {
+    listen 80;
+    root /var/www/local.saleshandy.com/html;
+        # Following line is customized to keep web in the app path
+        set $yii_bootstrap "index.php";
+        index $yii_bootstrap index.html index.htm;
+        # Website name
+    server_name local.saleshandy.com;
+        # Log 500 errors
+        error_log   /var/log/nginx/app-saleshandy.log;
+        # Typically I create a restrictions.conf file that I then include across all of my vhosts
+        #include /etc/nginx/conf.d/restrictions.conf;
+        # Typically I create a yiiframework.conf file that I then include across all of my yii vhosts
+        #include conf.d/yiiframework.conf;
+        # Extra config to protect web app and yii, from pavel
+        # BEGIN restrictions.conf
+        # Disable logging for favicon
+        location = /favicon.ico {
+                log_not_found off;
+                access_log off;
+        }
+        # Disable logging for robots.txt
+        location = /robots.txt {
+                allow all;
+                log_not_found off;
+                access_log off;
+        }
+        # Deny all attempts to access hidden files such as .htaccess, .htpasswd, .DS_Store (Mac).
+        location ~ /\. {
+                deny all;
+                access_log off;
+                log_not_found off;
+        }
+        # END restrictions.conf
+        # yiiframework related configs
+        # BEGIN yiiframework.conf
+        # Block access to protected, framework, and nbproject (artifact from Netbeans)
+        location ~ /(protected|framework|nbproject) {
+                deny all;
+                access_log off;
+                log_not_found off;
+        }
+        # Block access to theme-folder views directories
+        location ~ /themes/\w+/views {
+                deny all;
+                access_log off;
+                log_not_found off;
+        }
+        # End of Extra config
+        # Set expiry
+        location ~* \.html$ {
+            expires 30d;
+        }
+        # Setting for migration from windows to linux
+        # Following line redirects /web/USERID/FOLDER/files to respective amazon s3 bucket
+        # Ex. S3 path with regions https://s3-us-west-2.amazonaws.com/BUCKETNAME
+        location ~* ^/web/\d+/ {
+                rewrite /web/(.+)$ https://s3-us-west-2.amazonaws.com/appsh/$1;
+        }
+        location ~* \.(woff2|ogg|ogv|svg|svgz|eot|otf|woff|mp4|mp3|ttf|rss|atom|jpg|jpeg|gif|png|ico|zip|tgz|gz|rar|bz2|doc|xls|exe|ppt|tar|mid|midi|wav|bmp|rtf)(\?ver=[0-9.]+)?$ {
+                access_log off;
+                log_not_found off;
+                expires 365d;
+        }
+        location ~* \.(css|js)(\?ver=[0-9.]+)?$ {
+                access_log off;
+                log_not_found off;
+                expires 30d;
+        }
+        # Tell browser to cache image files for 24 hours, do not log missing images
+        location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
+                expires 24h;
+                log_not_found off;
+        }
+        # Main processing line
+        location / {
+                try_files $uri $uri/ /$yii_bootstrap?$args;
+        }
+        # Define 404 error page
+        #error_page 404 /404.html;
+        #error_page 404 /index.php;
+        # redirect server error pages to the static page /50x.html
+        # error_page 500 502 503 504 /50x.html;
+        #location = /50x.html {
+        #    root /usr/share/nginx/html;
+        #}
+        # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+	
+        location ~ \.php$ {
+                fastcgi_split_path_info ^(.+\.php)(/.+)$;
+                fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;
+                #fastcgi_split_path_info ^(.+\.php)(/.+)$;
+                set  $fsn /$yii_bootstrap;
+                if (-f $document_root$fastcgi_script_name){
+                        set $fsn $fastcgi_script_name;
+                }
+                include fastcgi_params;
+                fastcgi_param SCRIPT_FILENAME $document_root$fsn;
+                fastcgi_param PATH_TRANSLATED $document_root$fsn;
+                fastcgi_param PATH_INFO $fastcgi_path_info;
+                #fastcgi_intercept_errors on;
+                # fastcgi_buffer_size 128k;
+                # fastcgi_buffers 256 16k;
+                # fastcgi_busy_buffers_size 256k;
+                # fastcgi_temp_file_write_size 256k;
+                # fastcgi_read_timeout 3000;
+                #added5apriltoavoid 502 error
+                fastcgi_buffers 8 16k;
+                fastcgi_buffer_size 32k;
+                fastcgi_connect_timeout 1200;
+                fastcgi_send_timeout 1200;
+                fastcgi_read_timeout 1200;	
+
+                # Bulk Campaign open count redirect rule #  
+                if ($arg_id ~ ([0-9]+))
+	        	{
+	        	 	set $seq_id $1;
+	            	rewrite ^/t.php$ http://localtrk.saleshandy.com/sh-trk-112p68p/oc/$seq_id? permanent;	            	
+	            }	
+
+                # Campaign link redirect rule #  
+	            if ($arg_utm ~ ([0-9]+))
+	        	{
+	        	 	set $seq_id $1;
+	        	 	set $redirect_url $arg_r;
+	        	 	set $args '';
+	            	rewrite ^/l.php$ http://localtrk.saleshandy.com/sh-trk-112p68p/or/c/$seq_id?r=$redirect_url permanent;
+	            }	
+	            	
+
+        } #end of location php processing
+        ### rules block to allow static content to download from yii website ###
+        # static content : exclude from yii processing @web
+        location /web/campaigncsv/ {
+                try_files $uri $uri/ /$yii_bootstrap?$args;
+        }
+        # static content : user_logo exclude from yii processing @web
+        location /web/user_logo/ {
+                try_files $uri $uri/ /$yii_bootstrap?$args;
+        }
+        # static content : multicampaigncsv exclude from yii processing @web
+        location /web/multicampaigncsv/ {
+                try_files $uri $uri/ /$yii_bootstrap?$args;
+        }
+        # static content : assets exclude from yii processing @web
+        location /web/assets/ {
+                try_files $uri $uri/ /$yii_bootstrap?$args;
+        }
+        # static content : img exclude from yii processing @web
+        location /web/img/ {
+                try_files $uri $uri/ /$yii_bootstrap?$args;
+        }
+        # static content : contact_csv exclude from yii processing @web
+        location /web/contact_csv/ {
+                try_files $uri $uri/ /$yii_bootstrap?$args;
+        }
+        #IMP rule for app.saleshandy.com/web/ to work
+        #divert all request to index.php file inside /web folder
+        location  /web {
+                root /var/www/local.saleshandy.com/html/web;
+                index index.php index.html index.htm;
+                try_files $uri $uri/ @web;
+        }
+
+        location @web {
+                #rewrite ^/web(.*) /web/index.php?q=$1;
+                rewrite ^/web(.*) /web/index.php;
+        }
+        location /nginx_status {
+            # Turn on nginx stats
+            stub_status on;
+            # I do not need logs for stats
+            access_log   off;
+            # Security: Only allow access from 192.168.1.100 IP #
+            allow all;
+   
+            # Send rest of the world to /dev/null #
+            #deny all;
+        }
+
+        # redirect rule for local.saleshandy.com to move on localweb.saleshandy.com #
+
+		# Login url redirect rule #
+        location  /web/site/login {
+            return 301 http://localapp.saleshandy.com/login;
+        }  
+
+        # Login with gmail url redirect rule #
+        location /web/site/loginwithgoogle {
+            return 301 http://localapp.saleshandy.com/login;
+        }            
+
+        # Campaign List redirect rule #
+        location /web/followups/list {
+            return 301 http://localapp.saleshandy.com/campaigns/list;
+        }
+
+        # Campaign Create redirect rule # 
+        # Currently we don't have seperate page for campagin create so redirecting to campaign list page #
+        location /web/followups/create {
+            return 301 http://localapp.saleshandy.com/campaigns/list;
+        }
+
+
+        # Campaign View redirect rule #         
+        location /web/followups/view/ {
+            rewrite ^/web/followups/view/(.*)$ http://localapp.saleshandy.com/campaigns/$1/view permanent;
+        }
+
+		# Email open count redirect rule #         
+        location /web/email/countopened/ {
+        	if ($arg_userid ~ ([0-9]+))
+        	{
+        	 	set $userid $1;
+            	rewrite ^/web/email/countopened/(\d*)$ http://localtrk.saleshandy.com/sh-trk-112p68p/oe/$1/$userid? permanent;
+            }
+        }
+
+        # Campaign open count redirect rule #         
+        location = /web/followups/opcnt {
+        	if ($arg_id ~ ([0-9]+))
+        	{
+        	 	set $seq_id $1;
+            	rewrite ^/web/followups/opcnt(.*)$ http://localtrk.saleshandy.com/sh-trk-112p68p/oc/$seq_id? permanent;
+            }
+        }
+
+
+        # Document view redirect rule #         
+        location  ~ /web/p/(\w*) {        	
+        	rewrite ^/web/p/(\w+) http://localdocs.saleshandy.com/v1file/$1 permanent;        	
+        }
+
+        # Document Set redirect rule #
+         location  ~ /web/r/(\w*) {        	
+        	rewrite ^/web/r/(\w+) http://localdocs.saleshandy.com/v1file/$1 permanent;        	
+        }
+
+      
+        # Email Document / Document Set redirect rule #
+        location ~ /web/p/(.*)/utm/(.*) {
+
+            rewrite ^/web/p/(.*)/utm/(\w*) http://localdocs.saleshandy.com/v1file/$1 permanent;
+        }
+
+        # Signup redirect rule #
+       	# It is redirecting to saleshandy.com/signup so no need to rewrite #
+        location /web/site/registrationsmallform {
+            return 301 https://qa-auth.saleshandy.com;
+        }
+
+  		# Document View Performance redirect rule #         
+        location ~ /web/filelinks/view/(\w+) {
+            rewrite ^/web/filelinks/view/(\w+)$ http://localdocs.saleshandy.com/v1filelinkperformance/$1 permanent;
+        }
+        
+
+        # Document View Performance redirect rule  #         
+        location /web/files/performance/ {
+            rewrite ^/web/files/performance/(.*)$ http://localdocs.saleshandy.com/v1fileperformance/$1 permanent;
+        }
+
+      	# Outlook Api Redirect #
+      	location /web/outlookapi/setnewemail/ {
+      		rewrite ^/web/outlookapi/setnewemail/(.*)$ http://localtrk.saleshandy.com/outlook/$1;
+      	}
+
+      	location /web/outlookapi/ {
+      		rewrite ^/web/outlookapi/(.*)$ http://localtrk.saleshandy.com/outlook;
+      	}
+
+
+
+
+        
+
+}
+

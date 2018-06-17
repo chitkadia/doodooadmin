@@ -1,0 +1,39 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
+# Import documents
+# Query OK, 47930 rows affected, 5 warnings (3.82 sec)
+# Records: 47930  Duplicates: 0  Warnings: 5
+
+INSERT INTO document_master 
+    (id, user_id, document_source_id, source_id, file_name, bucket_name, 
+    file_path,
+     bucket_path, 
+     file_type, 
+     file_pages, source_document_id, source_document_link, 
+     public, 
+     share_access, 
+     snooze_notifications, 
+     locked, last_opened_by, last_opened_at, status, 
+     created, 
+     modified) 
+SELECT 
+    f.id, f.user_id, 1, 1, f.pretty_name, 'appsh', 
+    CONCAT(f.folder, '/', f.name), 
+    '', 
+    '', 
+    0, '', '', 
+    (CASE WHEN f.group_id = 0 THEN 0 ELSE 1 END), 
+    '{"can_edit":false,"can_delete":false}', 
+    1, 
+    0, 0, 0, 3, 
+    (UNIX_TIMESTAMP(f.date)-(60*60*5)-(60*30)), 
+    UNIX_TIMESTAMP() 
+FROM dev_salehandy.files f;
+
+# Set account_id based on the user data
+Query OK, 47811 rows affected (5.78 sec)
+Rows matched: 47858  Changed: 47811  Warnings: 0
+
+UPDATE document_master dm INNER JOIN user_master um ON dm.user_id = um.id SET dm.account_id = um.account_id;
+
+SET FOREIGN_KEY_CHECKS = 1;

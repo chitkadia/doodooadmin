@@ -1,0 +1,90 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
+# Import default accounts 
+# Time : Each (0.01 second * 5 = 0.05 second)
+INSERT INTO account_sending_methods 
+    (id, account_id, user_id, email_sending_method_id, source_id, name, from_name, from_email, payload, incoming_payload, 
+    connection_status, last_error, total_limit, credit_limit, last_reset, next_reset, status, is_default, 
+    is_outlook, created, modified) 
+VALUES 
+    (6, NULL, NULL, 4, 1, 'Outlook', 'Outlook', 'Outlook', '', '', 1, '', 0, 0, 0, 0, 1, 1, 1, 1496645339, 1496645339);
+
+INSERT INTO account_sending_methods 
+    (id, account_id, user_id, email_sending_method_id, source_id, name, from_name, from_email, payload, incoming_payload, 
+    connection_status, last_error, total_limit, credit_limit, last_reset, next_reset, status, is_default, 
+    is_outlook, created, modified) 
+VALUES 
+    (7, NULL, NULL, 3, 1, 'do-not-reply@saleshandy.com', 'do-not-reply@saleshandy.com', 'do-not-reply@saleshandy.com', 
+    '', '', 1, '', 0, 0, 0, 0, 1, 1, 0, 1496645339, 1496645339);
+
+INSERT INTO account_sending_methods 
+    (id, account_id, user_id, email_sending_method_id, source_id, name, from_name, from_email, payload, incoming_payload, 
+    connection_status, last_error, total_limit, credit_limit, last_reset, next_reset, status, is_default, 
+    is_outlook, created, modified) 
+VALUES 
+    (8, NULL, NULL, 3, 1, 'Signed by SalesHandy', 'Signed by SalesHandy', 'Signed by SalesHandy', '', '', 1, '', 0, 0, 0, 
+    0, 1, 1, 0, 1496645339, 1496645339);
+
+INSERT INTO account_sending_methods 
+    (id, account_id, user_id, email_sending_method_id, source_id, name, from_name, from_email, payload, incoming_payload, 
+    connection_status, last_error, total_limit, credit_limit, last_reset, next_reset, status, is_default, 
+    is_outlook, created, modified) 
+VALUES 
+    (9, NULL, NULL, 2, 1, 'SMTP Unknown', 'SMTP Unknown', 'SMTP Unknown', '', '', 1, '', 0, 0, 0, 0, 1, 1, 0, 1496645339, 1496645339);
+
+INSERT INTO account_sending_methods 
+    (id, account_id, user_id, email_sending_method_id, source_id, name, from_name, from_email, payload, incoming_payload, 
+    connection_status, last_error, total_limit, credit_limit, last_reset, next_reset, status, is_default, 
+    is_outlook, created, modified) 
+VALUES 
+    (10, NULL, NULL, 1, 1, 'Gmail Unknown', 'Gmail Unknown', 'Gmail Unknown', '', '', 1, '', 0, 0, 0, 0, 1, 1, 0, 1496645339, 1496645339);
+
+# Import gmail accounts
+# Query OK, 24408 rows affected, 1067 warnings (0.79 sec)
+# Records: 24408  Duplicates: 0  Warnings: 1067
+
+INSERT INTO account_sending_methods 
+    (user_id, email_sending_method_id, source_id, name, from_name, from_email, payload, incoming_payload, 
+    connection_status, last_error, total_limit, credit_limit, last_reset, next_reset, status, is_default, 
+    is_outlook, created, modified) 
+SELECT 
+    u.id, 1, 1, CONCAT("Gmail ", u.gmail_address), TRIM(CONCAT(u.fname, ' ', u.lname)), u.gmail_address, 
+    CONCAT('{"code":"","access_token":"', u.access_token, '","refresh_token":"', u.refresh_token, '","name":"', TRIM(CONCAT(u.fname, ' ', u.lname)), '","email":"', u.gmail_address, '","hd":"saleshandy.com","picture":"","created":', UNIX_TIMESTAMP(), ',"expires_in":3600}'), 
+    '', 1, '', 0, 0, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 1, 1, 0, 
+    UNIX_TIMESTAMP(), 
+    UNIX_TIMESTAMP() 
+FROM dev_salehandy.user u 
+WHERE u.gmail_address IS NOT NULL AND u.refresh_token IS NOT NULL AND u.gmail_address <> '' AND u.refresh_token <> '';
+
+# Import SMTP accounts
+# Query OK, 2296 rows affected, 68 warnings (0.13 sec)
+# Records: 2296  Duplicates: 0  Warnings: 68
+
+INSERT INTO account_sending_methods 
+    (user_id, email_sending_method_id, source_id, name, from_name, from_email, payload, incoming_payload, 
+    connection_status, last_error, total_limit, credit_limit, last_reset, next_reset, status, is_default, 
+    is_outlook, created, modified) 
+SELECT 
+    us.user_id, 2, 1, 
+    CONCAT("SMTP ", (CASE WHEN (us.email <> '' AND us.email IS NOT NULL) THEN us.email ELSE us.username END)), 
+    (CASE WHEN (us.full_name <> '' AND us.full_name IS NOT NULL) THEN us.full_name ELSE TRIM(CONCAT(u.fname, ' ', u.lname)) END), 
+    (CASE WHEN (us.email <> '' AND us.email IS NOT NULL) THEN us.email ELSE u.email END), 
+    CONCAT('{"host":"', us.host, '","username":"', us.username, '","password":"', us.password, '","encryption":"', us.encryption, '","port":"', us.port, '","smtp_provider":"other"}'), 
+    '', 
+    (CASE WHEN us.tested = 1 THEN 1 ELSE 0 END), 
+    (CASE WHEN us.tested = 0 THEN us.error ELSE '' END), 
+    0, 0, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 
+    (CASE WHEN us.tested = 1 THEN 1 ELSE 0 END), 
+    1, 0, 
+    UNIX_TIMESTAMP(), 
+    UNIX_TIMESTAMP() 
+FROM dev_salehandy.user_smtp us 
+INNER JOIN dev_salehandy.user u ON us.user_id = u.id;
+
+# Set account_id based on the user data
+# Query OK, 26688 rows affected (0.93 sec)
+# Rows matched: 26704  Changed: 26688  Warnings: 0
+
+UPDATE account_sending_methods asm INNER JOIN user_master um ON asm.user_id = um.id SET asm.account_id = um.account_id;
+
+SET FOREIGN_KEY_CHECKS = 1;

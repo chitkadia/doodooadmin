@@ -1,0 +1,74 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
+# Import free plan details
+INSERT INTO account_billing_master 
+    (account_id, plan_id, status, created, modified) 
+SELECT 
+    u.id, 
+    1, 
+    1, 
+    (UNIX_TIMESTAMP(u.created_at)-(60*60*5)-(60*30)), 
+    UNIX_TIMESTAMP() 
+FROM dev_salehandy.user u 
+INNER JOIN dev_salehandy.user_settings us ON u.id = us.user_id 
+WHERE u.id = u.group_id AND u.parent_id = 0 AND us.access_level = 0;
+
+# Import regular plan details
+INSERT INTO account_billing_master 
+    (account_id, plan_id, status, created, modified) 
+SELECT 
+    u.id, 
+    (CASE WHEN u.current_plan LIKE '%Year%' THEN 8 ELSE 2 END), 
+    1, 
+    (UNIX_TIMESTAMP(u.created_at)-(60*60*5)-(60*30)), 
+    UNIX_TIMESTAMP() 
+FROM dev_salehandy.user u 
+INNER JOIN dev_salehandy.user_settings us ON u.id = us.user_id 
+WHERE u.id = u.group_id AND u.parent_id = 0 AND us.access_level = 1;
+
+# Import plus plan details
+INSERT INTO account_billing_master 
+    (account_id, plan_id, status, created, modified) 
+SELECT 
+    u.id, 
+    (CASE WHEN u.current_plan LIKE '%Year%' THEN 9 ELSE 3 END), 
+    1, 
+    (UNIX_TIMESTAMP(u.created_at)-(60*60*5)-(60*30)), 
+    UNIX_TIMESTAMP() 
+FROM dev_salehandy.user u 
+INNER JOIN dev_salehandy.user_settings us ON u.id = us.user_id 
+WHERE u.id = u.group_id AND u.parent_id = 0 AND us.access_level = 2;
+
+# Import enterprise plan details
+INSERT INTO account_billing_master 
+    (account_id, plan_id, status, created, modified) 
+SELECT 
+    u.id, 
+    (CASE WHEN u.current_plan LIKE '%Year%' THEN 10 ELSE 4 END), 
+    1, 
+    (UNIX_TIMESTAMP(u.created_at)-(60*60*5)-(60*30)), 
+    UNIX_TIMESTAMP() 
+FROM dev_salehandy.user u 
+INNER JOIN dev_salehandy.user_settings us ON u.id = us.user_id 
+WHERE u.id = u.group_id AND u.parent_id = 0 AND u.is_premium = 1 AND us.access_level = 3;
+
+# Import trial plan details
+INSERT INTO account_billing_master 
+    (account_id, plan_id, status, created, modified) 
+SELECT 
+    u.id, 
+    (CASE WHEN u.current_plan LIKE '%Year%' THEN 10 ELSE 4 END), 
+    1, 
+    (UNIX_TIMESTAMP(u.created_at)-(60*60*5)-(60*30)), 
+    UNIX_TIMESTAMP() 
+FROM dev_salehandy.user u 
+INNER JOIN dev_salehandy.user_settings us ON u.id = us.user_id 
+WHERE u.id = u.group_id AND u.parent_id = 0 AND u.is_premium = 1 AND us.access_level = 3;
+
+# Set team size of plan
+
+
+# Set configurations of plan
+UPDATE account_billing_master abm INNER JOIN plan_master pm ON ab
+
+SET FOREIGN_KEY_CHECKS = 1;

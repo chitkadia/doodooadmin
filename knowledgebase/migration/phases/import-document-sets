@@ -1,0 +1,212 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
+# Import links (direct links)
+# Query OK, 1061 rows affected, 4 warnings (0.11 sec)
+# Records: 1061  Duplicates: 0  Warnings: 4
+
+INSERT INTO document_links 
+    (id, user_id, source_id, account_company_id, account_contact_id, record_id, name, link_domain, link_code, old_link, type, 
+    is_set_expiration_date, expires_at, forward_tracking, not_viewed_mail_sent, email_me_when_viewed, allow_download, 
+    password_protected, access_password, ask_visitor_info, visitor_info_payload, snooze_notifications, remind_not_viewed, 
+    remind_at, visitor_slug, last_opened_by, last_opened_at, status, created, modified) 
+SELECT 
+    (gdl.id + 111111), gdl.user_id, 1, NULL, 
+    (CASE WHEN LOCATE(',', gdl.contact_id) > 0 THEN NULL ELSE gdl.contact_id END), 
+    NULL, gdl.title, 'https://shdocs.cultofpassion.com', '', gdl.link, 2, 0, 0, 
+    (CASE WHEN LOCATE(',', gdl.contact_id) > 0 THEN 0 ELSE 1 END), 
+    0, 1, gdl.allowed_download, 
+    (CASE WHEN (gdl.password <> '' AND gdl.password IS NOT NULL) THEN 1 ELSE 0 END), 
+    (CASE WHEN (gdl.password <> '' AND gdl.password IS NOT NULL) THEN gdl.password ELSE '' END), 
+    0, '', 1, 0, 0, 
+    CONCAT(FLOOR(RAND()*100000), 'me', UNIX_TIMESTAMP()), 
+    0, 0, 1, 
+    (UNIX_TIMESTAMP(gdl.created_date)-(60*60*5)-(60*30)), 
+    UNIX_TIMESTAMP() 
+FROM dev_salehandy.generate_direct_filelink gdl;
+
+# Query OK, 983 rows affected (0.04 sec)
+# cords: 983  Duplicates: 0  Warnings: 0
+
+INSERT INTO document_link_files 
+    (document_link_id, document_id, status, modified) 
+SELECT 
+    (gdl.id + 111111), gdl.file_id, 1, UNIX_TIMESTAMP() 
+FROM dev_salehandy.generate_direct_filelink gdl 
+WHERE gdl.file_id NOT LIKE '%,%';
+
+?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?
+INSERT INTO document_link_files 
+    (document_link_id, document_id, status, modified) 
+SELECT 
+    (gdl.id + 111111), gdl.file_id, 1, UNIX_TIMESTAMP() 
+FROM dev_salehandy.generate_direct_filelink gdl 
+WHERE gdl.file_id NOT LIKE '%,%';
+?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?-?
+
+# Import links (document set)
+# Query OK, 47614 rows affected (1.14 sec)
+# Records: 47614  Duplicates: 0  Warnings: 0
+
+INSERT INTO document_links 
+    (id, user_id, source_id, account_company_id, account_contact_id, record_id, name, link_domain, link_code, old_link, type, 
+    is_set_expiration_date, expires_at, forward_tracking, not_viewed_mail_sent, email_me_when_viewed, allow_download, 
+    password_protected, access_password, ask_visitor_info, visitor_info_payload, snooze_notifications, remind_not_viewed, 
+    remind_at, visitor_slug, last_opened_by, last_opened_at, status, created, modified) 
+SELECT 
+    fl.id, fl.user_id, 1, NULL, NULL, NULL, fl.title, 'https://shdocs.cultofpassion.com', '', fl.link, 1, 0, 0, 0, 0, 1, fl.allow_download, 
+    (CASE WHEN (fl.password <> '' AND fl.password IS NOT NULL) THEN 1 ELSE 0 END), 
+    (CASE WHEN (fl.password <> '' AND fl.password IS NOT NULL) THEN fl.password ELSE '' END), 
+    fl.visitor_info, 
+    (CASE WHEN fl.visitor_info = 1 THEN '["email","name"]' ELSE '' END), 
+    1, 0, 0, 
+    CONCAT(FLOOR(RAND()*100000), 'me', UNIX_TIMESTAMP()), 
+    0, 0, 1, 
+    (UNIX_TIMESTAMP(fl.created_date)-(60*60*5)-(60*30)), 
+    UNIX_TIMESTAMP() 
+FROM dev_salehandy.filelinks fl 
+WHERE fl.is_email = 0 AND fl.is_campaign = 0 AND fl.position = 1;
+
+# Query OK, 48123 rows affected (0.55 sec)
+# Records: 48123  Duplicates: 0  Warnings: 0
+
+INSERT INTO document_link_files 
+    (document_link_id, document_id, status, modified) 
+SELECT 
+    fl.id, fl.file_id, 1, UNIX_TIMESTAMP() 
+FROM dev_salehandy.filelinks fl 
+WHERE fl.is_email = 0 AND fl.is_campaign = 0;
+
+# Import links (emails)
+# Query OK, 24947 rows affected, 50 warnings (0.72 sec)
+# Records: 24947  Duplicates: 0  Warnings: 50
+INSERT INTO document_links 
+    (id, user_id, source_id, account_company_id, account_contact_id, record_id, name, link_domain, link_code, old_link, type, 
+    is_set_expiration_date, expires_at, forward_tracking, not_viewed_mail_sent, email_me_when_viewed, allow_download, 
+    password_protected, access_password, ask_visitor_info, visitor_info_payload, snooze_notifications, remind_not_viewed, 
+    remind_at, visitor_slug, last_opened_by, last_opened_at, status, created, modified) 
+SELECT 
+    fl.id, fl.user_id, 1, NULL, NULL, NULL, fl.title, 'https://shdocs.cultofpassion.com', '', fl.link, 3, 0, 0, 0, 0, 1, fl.allow_download, 
+    (CASE WHEN (fl.password <> '' AND fl.password IS NOT NULL) THEN 1 ELSE 0 END), 
+    (CASE WHEN (fl.password <> '' AND fl.password IS NOT NULL) THEN fl.password ELSE '' END), 
+    fl.visitor_info, 
+    (CASE WHEN fl.visitor_info = 1 THEN '["email","name"]' ELSE '' END), 
+    1, 0, 0, 
+    CONCAT(FLOOR(RAND()*100000), 'me', UNIX_TIMESTAMP()), 
+    0, 0, 1, 
+    (UNIX_TIMESTAMP(fl.created_date)-(60*60*5)-(60*30)), 
+    UNIX_TIMESTAMP() 
+FROM dev_salehandy.filelinks fl 
+WHERE fl.is_email > 0;
+
+# Query OK, 24947 rows affected (0.29 sec)
+# Records: 24947  Duplicates: 0  Warnings: 0
+
+INSERT INTO document_link_files 
+    (document_link_id, document_id, status, modified) 
+SELECT 
+    fl.id, fl.file_id, 1, UNIX_TIMESTAMP() 
+FROM dev_salehandy.filelinks fl 
+WHERE fl.is_email > 0;
+
+# Import links (campaigns)
+# Query OK, 1731 rows affected (0.08 sec)
+# Records: 1731  Duplicates: 0  Warnings: 0
+
+INSERT INTO document_links 
+    (id, user_id, source_id, account_company_id, account_contact_id, record_id, name, link_domain, link_code, old_link, type, 
+    is_set_expiration_date, expires_at, forward_tracking, not_viewed_mail_sent, email_me_when_viewed, allow_download, 
+    password_protected, access_password, ask_visitor_info, visitor_info_payload, snooze_notifications, remind_not_viewed, 
+    remind_at, visitor_slug, last_opened_by, last_opened_at, status, created, modified) 
+SELECT 
+    fl.id, fl.user_id, 1, NULL, NULL, NULL, fl.title, 'https://shdocs.cultofpassion.com', '', fl.link, 4, 0, 0, 0, 0, 1, fl.allow_download, 
+    (CASE WHEN (fl.password <> '' AND fl.password IS NOT NULL) THEN 1 ELSE 0 END), 
+    (CASE WHEN (fl.password <> '' AND fl.password IS NOT NULL) THEN fl.password ELSE '' END), 
+    fl.visitor_info, 
+    (CASE WHEN fl.visitor_info = 1 THEN '["email","name"]' ELSE '' END), 
+    1, 0, 0, 
+    CONCAT(FLOOR(RAND()*100000), 'me', UNIX_TIMESTAMP()), 
+    0, 0, 1, 
+    (UNIX_TIMESTAMP(fl.created_date)-(60*60*5)-(60*30)), 
+    UNIX_TIMESTAMP() 
+FROM dev_salehandy.filelinks fl 
+WHERE fl.is_campaign > 0;
+
+# Query OK, 1731 rows affected (0.05 sec)
+# Records: 1731  Duplicates: 0  Warnings: 0
+
+INSERT INTO document_link_files 
+    (document_link_id, document_id, status, modified) 
+SELECT 
+    fl.id, fl.file_id, 1, UNIX_TIMESTAMP() 
+FROM dev_salehandy.filelinks fl 
+WHERE fl.is_campaign > 0;
+
+# Set account_id based on the user data
+# Query OK, 75078 rows affected (2.27 sec)
+# Rows matched: 75142  Changed: 75078  Warnings: 0
+
+UPDATE document_links dl INNER JOIN user_master um ON dl.user_id = um.id SET dl.account_id = um.account_id;
+
+# Import visits (direct links)
+# Query OK, 1113 rows affected, 32 warnings (1.46 sec)
+# Records: 1113  Duplicates: 0  Warnings: 32
+
+INSERT INTO document_link_visits 
+    (stamp, document_link_id, account_contact_id, location, download, modified) 
+SELECT 
+    vf.stamp, (vf.filelink_id + 111111), vf.contact_id, 
+    CONCAT('{"ip":"', vf.ipaddress, '","c":"', vf.city, '","s":"', vf.state, '","co":"', vf.country, '","ua":"","bn":"', vf.browser_name, '","bv":"","os":"', vf.os_platform, '"}'), 
+    0, 
+    (UNIX_TIMESTAMP(vf.open_datetime)-(60*60*5)-(60*30)) 
+FROM dev_salehandy.viewed_file vf 
+WHERE vf.type = 1 
+GROUP BY vf.stamp 
+ORDER BY vf.id;
+
+# Import visits (filelinks)
+# Query OK, 72877 rows affected (1.66 sec)
+# Records: 72877  Duplicates: 0  Warnings: 0
+
+INSERT INTO document_link_visits 
+    (stamp, document_link_id, account_contact_id, location, download, modified) 
+SELECT 
+    vf.stamp, (vf.filelink_id + 111111), vf.contact_id, 
+    CONCAT('{"ip":"', vf.ipaddress, '","c":"', vf.city, '","s":"', vf.state, '","co":"', vf.country, '","ua":"","bn":"', vf.browser_name, '","bv":"","os":"', vf.os_platform, '"}'), 
+    0, 
+    (UNIX_TIMESTAMP(vf.open_datetime)-(60*60*5)-(60*30)) 
+FROM dev_salehandy.viewed_file vf 
+WHERE vf.type = 0 
+GROUP BY vf.stamp 
+ORDER BY vf.id;
+
+# Import visits (email & campaigns)
+# Query OK, 7427 rows affected (0.63 sec)
+# Records: 7427  Duplicates: 0  Warnings: 0
+
+INSERT INTO document_link_visits 
+    (stamp, document_link_id, account_contact_id, location, download, modified) 
+SELECT 
+    vf.stamp, (vf.filelink_id + 111111), vf.contact_id, 
+    CONCAT('{"ip":"', vf.ipaddress, '","c":"', vf.city, '","s":"', vf.state, '","co":"', vf.country, '","ua":"","bn":"', vf.browser_name, '","bv":"","os":"', vf.os_platform, '"}'), 
+    0, 
+    (UNIX_TIMESTAMP(vf.open_datetime)-(60*60*5)-(60*30)) 
+FROM dev_salehandy.viewed_file vf 
+WHERE vf.type = 2 
+GROUP BY vf.stamp 
+ORDER BY vf.id;
+
+# Import visit logs
+# Query OK, 372746 rows affected, 222 warnings (1.65 sec)
+# Records: 372746  Duplicates: 0  Warnings: 222
+
+INSERT INTO document_link_visit_logs 
+    (visit_id, stamp, document_id, page_num, time_spent, modified) 
+SELECT 
+    0, vf.stamp, vf.file_id, vf.slide_number, vf.view_duration, 
+    (UNIX_TIMESTAMP(vf.open_datetime)-(60*60*5)-(60*30)) 
+FROM dev_salehandy.viewed_file vf;
+
+# Set visit_id in logs table
+UPDATE document_link_visit_logs dlvl INNER JOIN document_link_visits dlv ON dlvl.stamp = dlv.stamp SET dlvl.visit_id = dlv.id;
+
+SET FOREIGN_KEY_CHECKS = 1;

@@ -1,0 +1,73 @@
+/* General CSS */
+* { -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; }
+body, html { padding: 0px; margin: 0px; }
+body { font-family: 'Roboto', sans-serif; }
+:target:before { content: ""; display: block; height: 65px; margin: -65px 0 0; }
+.bodyfixed { overflow: hidden; }
+
+.overlay { position: fixed; top: 0; bottom: 0; left: 0; right: 0; z-index: 88888; display: none; background-color: rgba(0, 0, 0, 0.7); }
+.overlay.withthumbs { cursor: pointer; }
+.disabled { -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=30)"; filter: alpha(opacity=30); opacity: 0.3; }
+.shadow-div { -webkit-box-shadow: 0px 0px 25px 10px rgba(0,0,0,0.4); -moz-box-shadow: 0px 0px 25px 10px rgba(0,0,0,0.4); box-shadow: 0px 0px 25px 10px rgba(0,0,0,0.4); }
+
+/* 404 and 500 Page CSS */
+.body-class-404-500 { color: #000000; background-color: rgba(0, 0, 0, 0.1); }
+.message-container { min-width: 300px; margin: 50px auto; padding: 10px 0px; text-align: center; font-size: 12px; line-height: 20px;  }
+.h1-page { font-size: 138px; line-height: 188px; margin: 0px; padding: 0px; }
+.home-button { cursor: pointer; background-color: #00A36A; color: #FFFFFF; border: 0px; font-weight: bold; padding: 10px; }
+
+/* Ask information */
+.body-ask-info { color: #000000; background-color: rgba(0, 0, 0, 0.1); }
+.form-container { position: absolute; top: 90px; left: 50%; width: 340px; margin-left: -170px; margin-bottom: 90px; padding: 20px; background-color: rgba(255, 255, 255, 0.9); z-index: 88890; }
+.form-container .form-header-info { border-bottom: 1px solid #000000; text-align: center; font-size: 16px; line-height: 24px; margin-bottom: 10px; }
+.form-container .form-row-control { margin-bottom: 10px; }
+.form-container .form-row-control input { width: 95%; padding: 0px 3px; font-size: 12px; line-height: 32px; outline: none; border: 1px solid #CCCCCC; }
+.form-container .form-row-label { font-size: 12px; line-height: 24px; }
+.form-container .form-submit { text-align: center; font-size: 12px; line-height: 24px; }
+.form-container .submit-btn { cursor: pointer; background-color: #00A36A; color: #FFFFFF; border: 0px; font-weight: bold; padding: 10px; }
+.form-container .error { color: rgba(255, 0, 0, 0.8); }
+
+/* Multi document page visit */
+.multi-document-list { width: 90%; margin: 0px auto; padding-top: 65px; }
+.file-view { width: 31.33%; margin: 0px 1% 10px 1%; float: left; padding: 10px; text-align: center; background-color: rgba(0, 0, 0, 0.05); }
+.file-view .img-container { position: relative; width: 100%; height: 150px; }
+.file-view .img-container img { max-width: 100%; max-height: 100%; }
+.file-view a { text-decoration: none; }
+.file-view .document-name { color: #000000; }
+
+/* PDF Viewer CSS */
+.viewer { background-color: rgba(0, 0, 0, 0.1); padding-top: 65px; }
+.pdf-header { position: fixed; top: 0; right: 0; left: 0; width: 100%; padding: 0; margin: 0; height: 60px; background-color: rgba(0, 0, 0, 0.80); z-index: 7780; }
+.sep { float: right; width: 15px; }
+
+.pdf-header .logo { float: left; position: relative; width: 50%; height: 50px; margin-top: 5px; text-align: left; padding-left: 20px; }
+.pdf-header .logo .document-name { float: left; width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 16px; line-height: 48px; color: #ffffff; }
+.pdf-header .logo .back-link { float: left; width: 30px; font-size: 22px; line-height: 48px; color: #ffffff; }
+.pdf-header .logo .back-link a { text-decoration: none; color: #ffffff; }
+.pdf-header .pdf-options { float: right; position: relative; width: 50%; margin-top: 5px; height: 50px; color: #ffffff; text-align: right; padding-right: 20px; }
+.pdf-header .pdf-options .opt { float: right; min-width: 30px; height: 40px; font-size: 22px; line-height: 40px; margin-top: 5px; text-align: center; cursor: pointer; }
+
+.pdf-pager { position: fixed; bottom: 10px; left: 50%; margin-left: -75px; width: 150px; padding: 0; height: 40px; background-color: rgba(0, 0, 0, 0.80); z-index: 7780; }
+.pdf-pager .page-numbers { float: left; width: 70px; color: #ffffff; text-align: center; font-size: 16px; line-height: 40px; }
+.pdf-pager .previous { float: left; width: 40px; color: #ffffff; text-align: left; font-size: 20px; line-height: 40px; cursor: pointer; }
+.pdf-pager .next { float: left; width: 40px; color: #ffffff; text-align: right; font-size: 20px; line-height: 40px; cursor: pointer; }
+
+.pdf-loader { position: fixed; top: 50%; left: 50%; margin-top: -20px; margin-left: -75px; width: 150px; height: 40px; background-color: rgba(0, 0, 0, 0.90); z-index: 7780; text-align: center; color: #ffffff; font-size: 18px; line-height: 40px; }
+
+.pdf-viewer { position: relative; width: 100%; z-index: 7777; }
+.pdf-viewer canvas { margin: 0px auto 5px auto; }
+
+.thumbnail-view { position: fixed; top: 0px; bottom: 0px; right: 0px; padding: 0px 10px; min-width: 220px; z-index: 88890; display: none; background-color: rgba(0, 0, 0, 0.9); overflow-x: hidden; overflow-y: auto; }
+.thumbnail-view.vertical { -webkit-box-shadow: -5px 0px 10px 0px rgba(0,0,0,0.5); -moz-box-shadow: -5px 0px 10px 0px rgba(0,0,0,0.5); box-shadow: -5px 0px 10px 0px rgba(0,0,0,0.5); }
+.thumb-page { position: relative; cursor: pointer; margin: 15px 0px 0px 0px; }
+.thumb-page div { color: #fff; width: 100%; text-align: center; font-size: 12px; line-height: 24px; }
+.thumb-page canvas { margin: 0 auto; -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=80)"; filter: alpha(opacity=80); opacity: 0.8; }
+.thumb-page canvas:hover { margin: 0 auto; -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=100)"; filter: alpha(opacity=100); opacity: 1; }
+
+/* Responsive */
+@media (min-width: 1281px) {  }
+@media (min-width: 1025px) and (max-width: 1280px) {  }
+@media (min-width: 768px) and (max-width: 1024px) {  }
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {  }
+@media (min-width: 481px) and (max-width: 767px) {  }
+@media (min-width: 320px) and (max-width: 480px) {  }

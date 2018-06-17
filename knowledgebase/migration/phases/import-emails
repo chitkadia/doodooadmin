@@ -1,0 +1,75 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
+# Import emails
+# Query OK, 5743239 rows affected, 65535 warnings (6 min 16.47 sec)
+# Records: 5743239  Duplicates: 0  Warnings: 2366485
+# Instance 2
+# Query OK, 5982911 rows affected, 65535 warnings (5 min 38.08 sec)
+# Records: 5982911  Duplicates: 0  Warnings: 2458985
+
+
+INSERT INTO email_master 
+    (id, user_id, account_template_id, account_sending_method_id, source_id, subject, content, open_count, last_opened, 
+    reply_count, last_replied, is_scheduled, scheduled_at, timezone, sent_at, sent_message_id, track_reply, track_click, 
+    total_recipients, snooze_notifications, progress, status, created, modified) 
+SELECT 
+    e.id, e.user_id, e.template_id, 
+    (CASE WHEN (e.send_via = 1 AND e.is_gmail_sent = 1) THEN 3 WHEN (e.is_gmail = 2 AND e.send_via = 1) THEN 5 ELSE e.send_via END), 
+    (CASE WHEN (e.is_gmail = 1 AND e.send_via = 1) THEN 2 WHEN (e.is_gmail = 2 AND e.send_via = 1) THEN 3 ELSE 1 END), 
+    e.subject, e.content, e.opened, 
+    (UNIX_TIMESTAMP(e.opned_date)-(60*60*5)-(60*30)), 
+    (CASE WHEN (e.reply_at IS NULL OR e.reply_at = '0000-00-00 00:00:00') THEN 0 ELSE 1 END), 
+    (CASE WHEN (e.reply_at IS NULL OR e.reply_at = '0000-00-00 00:00:00') THEN 0 ELSE (UNIX_TIMESTAMP(e.reply_at)-(60*60*5)-(60*30)) END), 
+    (CASE WHEN (e.schedule_date IS NULL OR e.schedule_date = '0000-00-00 00:00:00') THEN 0 ELSE 1 END), 
+    (CASE WHEN (e.schedule_date IS NULL OR e.schedule_date = '0000-00-00 00:00:00') THEN 0 ELSE (UNIX_TIMESTAMP(e.schedule_date)-(60*60*5)-(60*30)) END), 
+    (CASE WHEN (e.schedule_timezone IS NULL OR e.schedule_timezone = '') THEN 'GMT+05:30' ELSE e.schedule_timezone END), 
+    (CASE WHEN (e.sent_date IS NULL OR e.sent_date = '0000-00-00 00:00:00') THEN 0 ELSE (UNIX_TIMESTAMP(e.sent_date)-(60*60*5)-(60*30)) END), 
+    (CASE WHEN e.gmail_sent_id IS NOT NULL THEN e.gmail_sent_id WHEN e.draft_id IS NOT NULL THEN e.draft_id ELSE '' END), 
+    (CASE WHEN (e.send_via = 3 OR (e.send_via = 1 AND e.is_gmail_sent = 1)) THEN 1 ELSE 0 END), 
+    0, 
+    0, 
+    (CASE WHEN e.is_mute = 1 THEN 0 ELSE 1 END), 
+    (CASE WHEN e.schedule_email = 2 THEN 2 WHEN (e.schedule_email = 0 AND e.draft_id <> '') THEN 0 ELSE 1 END), 
+    1, 
+    UNIX_TIMESTAMP(), 
+    UNIX_TIMESTAMP() 
+FROM dev_salehandy.email e;
+
+# Set account_id based on the user data
+# Query OK, 5709037 rows affected (30 min 50.94 sec) 
+# Rows matched: 5728668  Changed: 5709037  Warnings: 0
+# 2nd time
+# Query OK, 5709037 rows affected (50 min 19.83 sec)
+# Rows matched: 5728668  Changed: 5709037  Warnings: 0
+
+# Instance 2
+# Query OK, 5948531 rows affected (10 min 53.44 sec)
+# Rows matched: 5968312  Changed: 5948531  Warnings: 0
+
+
+UPDATE email_master em INNER JOIN user_master um ON em.user_id = um.id SET em.account_id = um.account_id;
+
+# Set template id to null if zero
+# Query OK, 5410822 rows affected (11 min 30.92 sec)
+# Rows matched: 5410822  Changed: 5410822  Warnings: 0
+# 2nd time
+# Query OK, 5410822 rows affected (18 min 38.61 sec)
+# Rows matched: 5410822  Changed: 5410822  Warnings: 0
+# 3rd time
+# Query OK, 5709037 rows affected (13 min 22.43 sec)
+# Rows matched: 5728668  Changed: 5709037  Warnings: 0
+# Instance 2
+# Query OK, 5644873 rows affected (2 min 14.10 sec)
+# Rows matched: 5644873  Changed: 5644873  Warnings: 0
+
+UPDATE email_master SET account_template_id = NULL WHERE account_template_id = 0;
+
+# INSERT in email_recipients table from gmail_group comma seperated ids.
+# 5253613 rows in set (9 min 0.78 sec)
+# Instance 2
+# 5482090 rows in set (7 min 54.71 sec)
+
+SELECT sh_app_new.Insert_Gmail_Recipient(id) FROM dev_salehandy.email WHERE gmail_group IS NOT NULL AND contact_id <> 0 AND gmail_group <> '' LIMIT 5982911;
+
+
+SET FOREIGN_KEY_CHECKS = 1;

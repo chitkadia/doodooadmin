@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html id="html">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+<title><?php echo $page_title; ?></title>
+<link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet" />
+<link rel="stylesheet" media="all" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" />
+<link rel="stylesheet" media="all" href="/css/viewer.css" />
+<link rel="stylesheet" media="all" href="/pdfjs/text_layer_builder.css" />
+<script>
+var _A = "<?php echo $a; ?>";
+var _B = "<?php echo $b; ?>";
+var _C = "<?php echo $c; ?>";
+var _D = "<?php echo $d; ?>";
+var _E = "<?php echo $e; ?>";
+var _F = "<?php echo $f; ?>";
+var _M = "<?php echo $m; ?>";
+var _T = "<?php echo $t; ?>";
+var _DOCFILE = "<?php echo $document_url; ?>";
+</script>
+</head>
+
+<body class="viewer">
+<?php echo $viewer_header_content; ?>
+
+<div class="pdf-viewer" id="render-file"></div>
+
+<div class="overlay" id="overlay"></div>
+<div class="thumbnail-view vertical" id="thumbnail-view"></div>
+
+<script src="/pdfjs/build-1.9.426/pdf.js"></script>
+<script src="/pdfjs/text_layer_builder.js"></script>
+<script src="/js/shlib.js"></script>
+<script src="/js/single.js"></script>
+</body>
+</html>

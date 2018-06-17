@@ -1,0 +1,199 @@
+====================
+Z-SalesHandy V2 API
+====================
+SalesHandy REST APIs Documentation
+
+
+====================
+01. Introduction
+====================
+SalesHandy provides REST based APIs to use services and integrate it into your system. Currently the APIs are utlized by SalesHandy Web Application, Chrome Plugin and Outlook Plugin. Later these APIs will be available for public use so that it can be integrated remotely to interact with SalesHandy.
+
+APIs have resource oriented URLs and uses HTTP features like authentication, verbs, response codes which are understood by most of HTTP clients. APIs uses JSON as communication medium.
+
+SalesHandy APIs are accessible at below endpoint:
+
+**Production**<br />
+[https://api.saleshandy.com](https://api.saleshandy.com)
+
+**Testing**<br />
+[https://api.cultofpassion.com](https://api.cultofpassion.com)
+
+
+====================
+02. Responses & Errors
+====================
+SalesHandy API responses are in JSON format. Every API call will return a valid JSON payload describing the object, operation performed or error details.
+<br /><br />
+
+### Success Response
+Valid json data payload representing resource output. Success responses will be different based on the request to request.<br />
+
+_Example:_
+<br />
+```
+{
+    "message": "Your account has been created successfully."
+}
+```
+<br />
+
+### Error Response
+Valid json data payload representing error details. Every error will have three keys in json object: `error`, `error_code` and `error_message` describing the error details.<br />
+
+_Example:_
+<br />
+```
+{
+    "error": true,
+    "error_code": 1001,
+    "error_message": "Could not connect with database."
+}
+```
+<br />
+
+### Global and/or Common Error Codes in Response
+SalesHandy API utilizes HTTP status codes and custom error codes for error handling.<br />
+
+HTTP Status Codes:<br />
+**2xx** - OK<br />
+**4xx** - Something wrong with request body, headers, resource access<br />
+**5xx** - Server encounters an error<br />
+
+There are following global and/or common error codes which describes specific error details:
+
+| HTTP Code | Error Code | Description                                                                     |
+|-----------|------------|---------------------------------------------------------------------------------|
+|       500 |       1001 | Could not connect with database.                                                |
+|       500 |       1002 | Database operation failed. Please try again.                                    |
+|       500 |       1003 | Server encountered an error. Please try again.                                  |
+|       404 |       1004 | Resource not found.                                                             |
+|       406 |       1005 | Incorrect value passed for header(s):                                           |
+|       401 |       1006 | Authorization token is expired. Please login again.                             |
+|       406 |       1007 | Source header is missing from request.                                          |
+|       406 |       1008 | Invalid value passed for source header.                                         |
+|       406 |       1009 | Required headers missing from request:                                          |
+|       405 |       1010 | Invalid HTTP method.                                                            |
+|       401 |       1011 | Authentication token is missing. Please login to your account.                  |
+|       403 |       1012 | You are not authorized to access this resource.                                 |
+|       402 |       1013 | Your plan does not include access to this resource.                             |
+|       400 |       1014 | Invalid request. Please correct following errors:\n                             |
+|       401 |       1015 | Your account is not active.                                                     |
+|       401 |       1016 | Your account is deleted.                                                        |
+|       401 |       1017 | Your account has been closed.                                                   |
+|       401 |       1018 | Your account has been deleted.                                                  |
+|       400 |       1019 | Your account is not verified.                                                   |
+|       404 |       1020 | Data which you are trying to access was not found.                              |
+|       400 |       1021 | Bad request. Requested URL is invalid.                                          |
+|       500 |       1022 | Error while uploading image:                                                    |
+|       400 |       1023 | Incorrect value passed for status change.                                       |
+|       400 |       1024 | You are not allowed to edit this shared resource.                               |
+|       400 |       1025 | You are not allowed to delete this shared resource.                             |
+|       401 |       1026 | Invalid authentication token. Please login to your account.                     |
+
+> Every API call will utilize above global and/or common error codes. So these error responses will not be repeated in each API call documentation.
+
+> Additionally, there will be API call specific errors which will be mentioned in each API call.
+
+
+====================
+03. General Guidelines
+====================
+### Request Headers
+
+Every request **MUST** have following headers set on request:
+
+```
+Content-Type: application/json;charset=UTF-8
+Accept: application/json
+X-SH-Source: <value>
+X-Authorization-Token: <value>
+```
+<br />
+
+> `X-Authorization-Token` header is required only for the requests where user MUST be logged in to access resources.
+
+<br />
+
+### Authorization Header
+
+To identify that the request is made by valid user - API uses authorization header to be passed along with request. The resources which require user authorization, **MUST** pass authorization header to the request.
+
+When user logs in - SalesHandy returns authorization token which is valid for 7 days. After that - user will have to login again. To generate authorization token - user will have to login with Login resource (later covered in documentation).
+
+Login uses **Basic Auth** for authentication. Once user is logged in, all the resources which requires authorization, will need to pass `X-Authorization-Token` header to validate the request.
+
+<br />
+
+### Source Header
+
+As mentioned earlier - SalesHandy APIs are utilized by SalesHandy Web Application, Chrome Plugin and Outlook Plugin. To identify that the request has come from which source, SalesHandy uses `X-SH-Source` header. Every request **MUST** send `X-SH-Source` header.
+
+
+Valid values for `X-SH-Source` header:
+
+| Value                 | Source                                            |
+|-----------------------|---------------------------------------------------|
+| WEB_APP               | SalesHandy Web Application                        |
+| CHROME_PLUGIN         | Chrome Plugin                                     |
+| OUTLOOK_PLUGIN        | Outlook Plugin                                    |
+
+
+====================
+19. Roles
+====================
+Allows user to manage roles.
+
+**REQUIRES AUTHORIZATION**
+
+
+====================
+-- GET /roles/list
+====================
+This resource is used to get roles which are available within the account.
+
+There are two types of roles available: **System Defined** and **User Defined**. System defined roles are the ones which can not be updated or deleted by users, those roles are available just as templates to be used (read only). User defined roles are the ones which are created by the users, those roles can be modified by the users.
+
+User should have **Roles / View** access to use this resource.
+<br /><br />
+
+#### Request
+Below parameters can be passed in request to get data:
+
+| Parameter         | Details                                                                                                       |
+|-------------------|---------------------------------------------------------------------------------------------------------------|
+| page              | Get data by page number (for large data sets)<br />*Optional*, *Default:* 1                                   |
+| per_page          | Number of rows to get in one request<br />*Optional*, *Default:* 25                                           |
+| order_by          | Display data in specific order<br />*Optional*, *Default:* Order by recently added rows<br /><br />Possible values are:<br />**name**: Order by role name<br />**created_by**: Order by user who created the role<br />**total_users**: Order by number of users assigned to role |
+| order             | Display data in ascending or descending order<br />*Optional*, *Default:* ASC<br /><br />Possible values are:<br />**ASC**: Ascending order<br />**DESC**: Descending order |
+| user              | Get roles created by specific user<br />*Optional*, *Default:* All records                                    |
+| query             | Search data<br />*Optional*                                                                                   |
+
+> If any parameter contains un-expected data, those parameters will be ignored and will be considered as default values.
+
+#### Response
+**On success**, it returns data with below parameters:
+
+| Parameter             | Details                                                                                                   |
+|-----------------------|-----------------------------------------------------------------------------------------------------------|
+| total_records         | Number of records available in response                                                                   |
+| total_pages           | Number of pages upto which data can be traversed                                                          |
+| current_page          | Current page number of result                                                                             |
+| per_page              | Number of records to be returned per page                                                                 |
+| rows                  | Array of json object describing data                                                                      |
+
+Each json objects of `rows` have following data:
+
+| Parameter             | Details                                                                                                   |
+|-----------------------|-----------------------------------------------------------------------------------------------------------|
+| id                    | Id of the row                                                                                             |
+| name                  | Name of the role                                                                                          |
+| created_by            | Name of the user who created the role                                                                     |
+| created_by_id         | Id of the user who created the role                                                                       |
+| total_users           | Total users to whom this role is assigned                                                                 |
+| is_system             | Boolean value whether role is system based or custom role                                                 |
+
+**On error**, it returns error containing description.
+> Including all global / common errors
+
+

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+<title><?php echo $page_title; ?></title>
+<link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet" />
+<link rel="stylesheet" media="all" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" />
+<link rel="stylesheet" media="all" href="/css/viewer.css" />
+<script>
+var _A = "<?php echo $a; ?>";
+var _B = "<?php echo $b; ?>";
+var _C = "<?php echo $c; ?>";
+var _D = "<?php echo $d; ?>";
+var _E = "<?php echo $e; ?>";
+var _F = "<?php echo $f; ?>";
+var _M = "<?php echo $m; ?>";
+var _T = "<?php echo $t; ?>";
+</script>
+</head>
+
+<body class="viewer">
+<?php echo $viewer_header_content; ?>
+
+<?php if (!empty($link_documents)) { ?>
+<div class="multi-document-list">
+    <?php
+    for ($i=0; $i<count($link_documents); $i++) {
+        ?>
+        <div class="file-view">
+            <a href="<?php echo $link_documents[$i]['document_link']; ?>">
+                <div class="img-container">
+                    <img src="<?php echo $link_documents[$i]['preview_image']; ?>" alt="<?php echo $link_documents[$i]['file_name']; ?>" border="0" />
+                </div>
+                <div class="document-name"><?php echo $link_documents[$i]["file_name"]; ?></div>
+            </a>
+        </div>
+        <?php
+    }
+    ?>
+</div>
+<?php } ?>
+
+<div class="overlay" id="overlay"></div>
+
+<script src="/js/shlib.js"></script>
+<script src="/js/multi.js"></script>
+</body>
+</html>

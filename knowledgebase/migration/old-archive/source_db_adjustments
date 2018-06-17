@@ -1,0 +1,235 @@
+## Get user where it is not possible to identify wether user is admin or team member
+
+SELECT id, group_id, parent_id, email, password, created_at FROM user WHERE group_id = 0;
+
+# Query OK, 114 rows affected (0.03 sec)
+# Rows matched: 114  Changed: 114  Warnings: 0
+
+Solution:
+UPDATE user SET group_id = id, parent_id = 0 WHERE group_id = 0;
+
+## Get user where it is not possible to identify wether user is admin or team member
+
+SELECT id, group_id, parent_id, email, password, created_at FROM user WHERE group_id is null;
+
+# Query OK, 114 rows affected (0.03 sec)
+# Rows matched: 114  Changed: 114  Warnings: 0
+
+Solution:
+UPDATE user SET group_id = id, parent_id = 0 WHERE group_id is null;
+UPDATE user_master SET account_id = id WHERE account_id is null;
+
+
+## Get users whose parent_id is same as group_id though being an admin
+
+SELECT id, group_id, parent_id, email, password, created_at FROM user WHERE id = group_id AND parent_id <> 0;
+
+# Query OK, 276 rows affected (0.20 sec)
+# Rows matched: 276  Changed: 276  Warnings: 0
+
+Solution:
+UPDATE user SET parent_id = 0 WHERE id = group_id AND parent_id <> 0;
+
+
+## Get users whose parent_id is 0 though being a team member
+
+SELECT id, group_id, parent_id, email, password, created_at FROM user WHERE id <> group_id AND parent_id = 0;
+
+# Query OK, 3 rows affected (0.09 sec)
+# Rows matched: 3  Changed: 3  Warnings: 0
+
+Solution:
+UPDATE user SET parent_id = group_id WHERE id <> group_id AND parent_id = 0;
+
+
+## Get users with duplicate email address
+
+SELECT email, COUNT(id) as duplicates FROM user GROUP BY email HAVING duplicates > 1;
+
+Solution:
++---------------------------------+------------+
+| email                           | duplicates |
++---------------------------------+------------+
+| 1718800838@qq.com               |          4 |
+| 2650495283@qq.com               |          7 |
+| 3534916177@qq.com               |          3 |
+| admin@raketgig.com              |          2 |
+| ajit+1@softwaresuggest.com      |          2 |
+| ashley@bambeehq.com             |          3 |
+| ashley@bambeehq.net             |          3 |
+| ashley@bambeehr.net             |          3 |
+| Beerski18mx@gmail.com           |          2 |
+| catarina.faria@infosistema.com  |          2 |
+| dario.villena@gamanventures.com |          2 |
+| diksha.k@amazeology.com.au      |          2 |
+| farhan@dynexcel.com             |          2 |
+| hany.nabil.lawyer@gmail.com     |          3 |
+| helpdesk@ayurvedcentral.com     |          2 |
+| jacek.r@forecast.it999          |          2 |
+| jane@nathanhr.com               |          2 |
+| jasongraphicdesign02@gmail.com  |          4 |
+| jayathirtha_np@itrustinfo.com   |          2 |
+| Kdalsaniya112e@gmail.com        |          2 |
+| kunika@startupbyte.com          |          2 |
+| kyle.alexander@duuzra.com       |          2 |
+| lisa@ongraphmail.com            |          2 |
+| liz@designmuseumfoundation.org  |          2 |
+| mabelsmith2221@gmail.com        |          2 |
+| ngumbo@papayahealth.io          |          2 |
+| patelutsav7@gmail.com           |          6 |
+| rehan@dynexcel.com              |          2 |
+| Sam@ghostit.co                  |          2 |
+| stephanie@jaeasttennessee.org   |          2 |
+| support@kreative.com            |          2 |
+| tpxsales@gmail.com              |          2 |
+| viranth@isd112.org              |          5 |
+| yahho7788@gmail.com             |          2 |
++---------------------------------+------------+
+
+
+SELECT id FROM user WHERE email = '1718800838@qq.com';
+UPDATE user SET email = '1718800838@qq.com1' WHERE id = 35980;
+UPDATE user SET email = '1718800838@qq.com2' WHERE id = 35981;
+UPDATE user SET email = '1718800838@qq.com3' WHERE id = 36370;
+
+SELECT id FROM user WHERE email = '2650495283@qq.com';
+UPDATE user SET email = '2650495283@qq.com1' WHERE id = 32778;
+UPDATE user SET email = '2650495283@qq.com2' WHERE id = 32779;
+UPDATE user SET email = '2650495283@qq.com3' WHERE id = 32781;
+UPDATE user SET email = '2650495283@qq.com4' WHERE id = 32783;
+UPDATE user SET email = '2650495283@qq.com5' WHERE id = 32784;
+UPDATE user SET email = '2650495283@qq.com6' WHERE id = 32785;
+
+SELECT id FROM user WHERE email = '3534916177@qq.com';
+UPDATE user SET email = '3534916177@qq.com1' WHERE id = 32695;
+UPDATE user SET email = '3534916177@qq.com2' WHERE id = 32696;
+
+SELECT id FROM user WHERE email = 'admin@raketgig.com';
+UPDATE user SET email = 'admin@raketgig.com999' WHERE id = 29011;
+
+SELECT id FROM user WHERE email = 'ajit+1@softwaresuggest.com';
+UPDATE user SET email = 'ajit+1@softwaresuggest.com999' WHERE id = 352;
+
+SELECT id FROM user WHERE email = 'artem@mawi.band';
+UPDATE user SET email = 'artem@mawi.band999' WHERE id = 39181;
+
+SELECT id FROM user WHERE email = 'ashley@bambeehq.com';
+UPDATE user SET email = 'ashley@bambeehq.com9991' WHERE id = 38597;
+UPDATE user SET email = 'ashley@bambeehq.com9992' WHERE id = 38600;
+
+SELECT id FROM user WHERE email = 'ashley@bambeehq.net';
+UPDATE user SET email = 'ashley@bambeehq.net9991' WHERE id = 38599;
+UPDATE user SET email = 'ashley@bambeehq.net8882' WHERE id = 38602;
+
+SELECT id FROM user WHERE email = 'ashley@bambeehr.net';
+UPDATE user SET email = 'ashley@bambeehr.net9991' WHERE id = 38598;
+UPDATE user SET email = 'ashley@bambeehr.net9992' WHERE id = 38601;
+
+SELECT id FROM user WHERE email = 'Beerski18mx@gmail.com';
+UPDATE user SET email = 'Beerski18mx@gmail.com999' WHERE id = 22295;
+
+SELECT id FROM user WHERE email = 'catarina.faria@infosistema.com';
+UPDATE user SET email = 'catarina.faria@infosistema.com999' WHERE id = 22407;
+
+SELECT id FROM user WHERE email = 'dario.villena@gamanventures.com';
+UPDATE user SET email = 'dario.villena@gamanventures.com999' WHERE id = 25221;
+
+SELECT id FROM user WHERE email = 'diksha.k@amazeology.com.au';
+UPDATE user SET email = 'diksha.k@amazeology.com.au999' WHERE id = 25479;
+
+SELECT id FROM user WHERE email = 'farhan@dynexcel.com';
+UPDATE user SET email = 'farhan@dynexcel.com999' WHERE id = 26007;
+
+SELECT id FROM user WHERE email = 'hany.nabil.lawyer@gmail.com';
+UPDATE user SET email = 'hany.nabil.lawyer@gmail.com9991' WHERE id = 4477;
+UPDATE user SET email = 'hany.nabil.lawyer@gmail.com9992' WHERE id = 4478;
+
+SELECT id FROM user WHERE email = 'helpdesk@ayurvedcentral.com';
+UPDATE user SET email = 'helpdesk@ayurvedcentral.com999' WHERE id = 26177;
+
+SELECT id FROM user WHERE email = 'jacek.r@forecast.it999';
+UPDATE user SET email = 'jacek.r@forecast.it9991' WHERE id = 26861;
+
+SELECT id FROM user WHERE email = 'jane@nathanhr.com';
+UPDATE user SET email = 'jane@nathanhr.com999' WHERE id = 32607;
+
+SELECT id FROM user WHERE email = 'jasongraphicdesign02@gmail.com';
+UPDATE user SET email = 'jasongraphicdesign02@gmail.com9991' WHERE id = 20687;
+UPDATE user SET email = 'jasongraphicdesign02@gmail.com9992' WHERE id = 20688;
+UPDATE user SET email = 'jasongraphicdesign02@gmail.com9993' WHERE id = 20689;
+
+SELECT id FROM user WHERE email = 'jayathirtha_np@itrustinfo.com';
+UPDATE user SET email = 'jayathirtha_np@itrustinfo.com999' WHERE id = 27217;
+
+SELECT id FROM user WHERE email = 'Kdalsaniya112e@gmail.com';
+UPDATE user SET email = 'Kdalsaniya112e@gmail.com999' WHERE id = 17460;
+
+SELECT id FROM user WHERE email = 'kunika@startupbyte.com';
+UPDATE user SET email = 'kunika@startupbyte.com999' WHERE id = 16690;
+
+SELECT id FROM user WHERE email = 'kyle.alexander@duuzra.com';
+UPDATE user SET email = 'kyle.alexander@duuzra.com999' WHERE id = 16655;
+
+SELECT id FROM user WHERE email = 'lisa@ongraphmail.com';
+UPDATE user SET email = 'lisa@ongraphmail.com999' WHERE id = 27648;
+
+SELECT id FROM user WHERE email = 'liz@designmuseumfoundation.org';
+UPDATE user SET email = 'liz@designmuseumfoundation.org99' WHERE id = 32066;
+
+SELECT id FROM user WHERE email = 'mabelsmith2221@gmail.com';
+UPDATE user SET email = 'mabelsmith2221@gmail.com999' WHERE id = 20632;
+
+SELECT id FROM user WHERE email = 'ngumbo@papayahealth.io';
+UPDATE user SET email = 'ngumbo@papayahealth.io999' WHERE id = 19700;
+
+SELECT id FROM user WHERE email = 'patelutsav7@gmail.com';
+UPDATE user SET email = 'patelutsav7@gmail.com9991' WHERE id = 24715;
+UPDATE user SET email = 'patelutsav7@gmail.com9992' WHERE id = 24716;
+UPDATE user SET email = 'patelutsav7@gmail.com9993' WHERE id = 24717;
+UPDATE user SET email = 'patelutsav7@gmail.com9994' WHERE id = 24718;
+UPDATE user SET email = 'patelutsav7@gmail.com9995' WHERE id = 4621;
+
+SELECT id FROM user WHERE email = 'rehan@dynexcel.com';
+UPDATE user SET email = 'rehan@dynexcel.com999' WHERE id = 26636;
+
+SELECT id FROM user WHERE email = 'Sam@ghostit.co';
+UPDATE user SET email = 'Sam@ghostit.co999' WHERE id = 37446;
+
+SELECT id FROM user WHERE email = 'stephanie@jaeasttennessee.org';
+UPDATE user SET email = 'stephanie@jaeasttennessee.org999' WHERE id = 22696;
+
+SELECT id FROM user WHERE email = 'support@kreative.com';
+UPDATE user SET email = 'support@kreative.com999' WHERE id = 37170;
+
+SELECT id FROM user WHERE email = 'tpxsales@gmail.com';
+UPDATE user SET email = 'tpxsales@gmail.com999' WHERE id = 13585;
+
+SELECT id FROM user WHERE email = 'viranth@isd112.org';
+UPDATE user SET email = 'viranth@isd112.org9991' WHERE id = 32098;
+UPDATE user SET email = 'viranth@isd112.org9992' WHERE id = 32099;
+UPDATE user SET email = 'viranth@isd112.org9993' WHERE id = 32100;
+UPDATE user SET email = 'viranth@isd112.org9994' WHERE id = 32101;
+
+SELECT id FROM user WHERE email = 'yahho7788@gmail.com';
+UPDATE user SET email = 'yahho7788@gmail.com999' WHERE id = 35538;
+
+SELECT id FROM user WHERE email = 'felipe@onenessaffiliates.com';
+UPDATE user SET email = 'felipe@onenessaffiliates.com999' WHERE id = 42408;
+
+SELECT id FROM user WHERE email = 'imax.jagadesh@gmail.com';
+UPDATE user SET email = 'imax.jagadesh@gmail.com999' WHERE id = 39286;
+
+SELECT id FROM user WHERE email = 'jackson@brgtshirts.com';
+UPDATE user SET email = 'jackson@brgtshirts.com999' WHERE id = 41280;
+
+SELECT id FROM user WHERE email = 'jen@chatbooks.com';
+UPDATE user SET email = 'jen@chatbooks.com999' WHERE id = 40331;
+
+SELECT id FROM user WHERE email = 'sbylsma@bellmontsecurities.com.au';
+UPDATE user SET email = 'sbylsma@bellmontsecurities.com.au999' WHERE id = 16958;
+
+SELECT id FROM user WHERE email = 'simon.nizet@gmail.com';
+UPDATE user SET email = 'simon.nizet@gmail.com999' WHERE id = 39712;
+
+SELECT id FROM user WHERE email = 'syed.ahmed@werkapp.co';
+UPDATE user SET email = 'syed.ahmed@werkapp.co999' WHERE id = 40156;

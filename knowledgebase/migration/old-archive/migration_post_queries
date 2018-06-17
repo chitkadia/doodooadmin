@@ -1,0 +1,90 @@
+Check Tables for Account Relation
+====================================
+account_billing_master
+account_companies
+account_contacts
+account_invoice_details
+account_link_master
+account_master
+account_organization
+account_payment_details
+account_sending_methods
+account_subscription_details
+account_subscription_line_items
+account_teams
+account_team_members
+account_templates
+account_template_teams
+activity
+campaign_links
+campaign_logs
+campaign_master
+campaign_sequences
+campaign_stages
+coupon_master
+document_links
+document_link_files
+document_link_visits
+document_link_visit_logs
+document_master
+document_teams
+email_master
+email_recipients
+user_master
+user_resources
+user_settings
+valid_plan_coupons
+
+
+
+Ignore Tables
+====================================
+webhooks
+user_type_master
+action_master
+api_messages
+app_constant_vars
+document_source_master
+email_sending_method_master
+payment_method_master
+plan_master
+resource_master
+role_default_resources
+role_master
+social_login_master
+source_master
+app_change_log
+branding
+query_error_log
+user_actions
+user_authentication_tokens
+user_invitations
+user_pass_reset_requests
+account_folders
+account_folder_teams
+*campaign_track_history
+*email_track_history
+*email_links
+*user_social_login
+*campaign_domain_blocklist
+*user_members (need to remove)
+
+
+
+
+# Adjust entries of database after import has been executed successfully
+
+
+# Update Email Recipients Account Ids ()
+UPDATE email_recipients er INNER JOIN email_master em ON er.email_id = em.id SET er.account_id = em.account_id;
+
+# Update Document Account Ids (1 min)
+UPDATE document_master dm INNER JOIN user_master um ON dm.user_id = um.id SET dm.account_id = um.account_id;
+
+# Update Document Links Account Ids (1 min)
+UPDATE document_links dl INNER JOIN user_master um ON dl.user_id = um.id SET dl.account_id = um.account_id;
+
+
+
+
+

@@ -1,0 +1,495 @@
+====================================
+Create source code folders
+====================================
+
+$ sudo mkdir -p /var/www/localapp.saleshandy.com/html
+
+$ sudo chown -R $USER:$USER /var/www/localapp.saleshandy.com/html
+
+$ sudo chmod -R 755 /var/www/localapp.saleshandy.com/html
+
+$ sudo chgrp -R www-data /var/www/localapp.saleshandy.com/html/
+
+$ sudo chmod -R g+w /var/www/localapp.saleshandy.com/html/
+
+$ sudo chown -R www-data:www-data /var/www/localapp.saleshandy.com/html/
+
+
+$ sudo mkdir -p /var/www/localweb.saleshandy.com/html
+
+$ sudo chown -R $USER:$USER /var/www/localweb.saleshandy.com/html
+
+$ sudo chmod -R 755 /var/www/localweb.saleshandy.com/html
+
+$ sudo chgrp -R www-data /var/www/localweb.saleshandy.com/html/
+
+$ sudo chmod -R g+w /var/www/localweb.saleshandy.com/html/
+
+$ sudo chown -R www-data:www-data /var/www/localweb.saleshandy.com/html/
+
+
+$ sudo mkdir -p /var/www/localplatform.saleshandy.com/html
+
+$ sudo chown -R $USER:$USER /var/www/localplatform.saleshandy.com/html
+
+$ sudo chmod -R 755 /var/www/localplatform.saleshandy.com/html
+
+$ sudo chgrp -R www-data /var/www/localplatform.saleshandy.com/html/
+
+$ sudo chmod -R g+w /var/www/localplatform.saleshandy.com/html/
+
+$ sudo chown -R www-data:www-data /var/www/localplatform.saleshandy.com/html/
+
+
+$ sudo mkdir -p /var/www/localadmin.saleshandy.com/html
+
+$ sudo chown -R $USER:$USER /var/www/localadmin.saleshandy.com/html
+
+$ sudo chmod -R 755 /var/www/localadmin.saleshandy.com/html
+
+$ sudo chgrp -R www-data /var/www/localadmin.saleshandy.com/html/
+
+$ sudo chmod -R g+w /var/www/localadmin.saleshandy.com/html/
+
+$ sudo chown -R www-data:www-data /var/www/localadmin.saleshandy.com/html/
+
+
+====================================
+Clone repositories
+====================================
+
+$ cd /var/www/localapp.saleshandy.com/html/
+
+$ git clone https://gitlab.com/saleshandy-app/core/webapp-v2.git .
+
+
+$ cd /var/www/localweb.saleshandy.com/html/
+
+$ git clone https://gitlab.com/saleshandy-app/core/tnsh-frontend-angular.git .
+
+
+$ cd /var/www/localplatform.saleshandy.com/html/
+
+$ git clone https://gitlab.com/saleshandy-app/core/cross-platform-angular-app.git .
+
+
+$ cd /var/www/localadmin.saleshandy.com/html/
+
+$ git clone https://gitlab.com/saleshandy-app/core/qwerty2.git .
+
+
+====================================
+Setup web application host file
+====================================
+
+Create host configuration file:
+$ sudo nano /etc/nginx/sites-available/localapp.saleshandy.com
+
+Add following content:
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name localapp.saleshandy.com;
+
+    index index.html;
+
+    error_log /var/log/nginx/localapp-saleshandy-com-error.log;
+    access_log /var/log/nginx/localapp-saleshandy-com-access.log;
+
+    root /var/www/localweb.saleshandy.com/html/public;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+
+Register virtual host with server configuration:
+$ sudo ln -s /etc/nginx/sites-available/localapp.saleshandy.com /etc/nginx/sites-enabled/
+
+
+====================================
+Setup APIs host file
+====================================
+
+Create host configuration file:
+$ sudo nano /etc/nginx/sites-available/localapi.saleshandy.com
+
+Add following content:
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name localapi.saleshandy.com;
+
+    index api.php;
+
+    error_log /var/log/nginx/localapi-saleshandy-com-error.log;
+    access_log /var/log/nginx/localapi-saleshandy-com-access.log;
+
+    root /var/www/localapp.saleshandy.com/html/api;
+
+    location / {
+        try_files $uri /api.php$is_args$args;
+    }
+
+    location ~ \.php {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;
+
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+        fastcgi_index api.php;
+    }
+}
+
+Register virtual host with server configuration:
+$ sudo ln -s /etc/nginx/sites-available/localapi.saleshandy.com /etc/nginx/sites-enabled/
+
+
+====================================
+Setup document viewer host file
+====================================
+
+Create host configuration file:
+$ sudo nano /etc/nginx/sites-available/localdocs.saleshandy.com
+
+Add following content:
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name localdocs.saleshandy.com;
+
+    index view.php;
+
+    error_log /var/log/nginx/localdocs-saleshandy-com-error.log;
+    access_log /var/log/nginx/localdocs-saleshandy-com-access.log;
+
+    root /var/www/localapp.saleshandy.com/html/docs;
+
+    location / {
+        try_files $uri /view.php$is_args$args;
+    }
+
+    location ~ \.php {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;
+
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+        fastcgi_index view.php;
+    }
+}
+
+Register virtual host with server configuration:
+$ sudo ln -s /etc/nginx/sites-available/localdocs.saleshandy.com /etc/nginx/sites-enabled/
+
+
+====================================
+Setup tracker domain host files
+====================================
+
+Create host configuration file:
+$ sudo nano /etc/nginx/sites-available/localtrk.saleshandy.com
+
+Add following content:
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name localtrk.saleshandy.com;
+
+    index track.php;
+
+    error_log /var/log/nginx/localtrk-saleshandy-com-error.log;
+    access_log /var/log/nginx/localtrk-saleshandy-com-access.log;
+
+    root /var/www/localapp.saleshandy.com/html/track;
+
+    location / {
+        try_files $uri /track.php$is_args$args;
+    }
+
+    location ~ \.php {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;
+
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+        fastcgi_index track.php;
+    }
+}
+
+Register virtual host with server configuration:
+$ sudo ln -s /etc/nginx/sites-available/localtrk.saleshandy.com /etc/nginx/sites-enabled/
+
+
+====================================
+Setup media domain host files
+====================================
+
+Create host configuration file:
+$ sudo nano /etc/nginx/sites-available/localmedia.saleshandy.com
+
+Add following content:
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name localmedia.saleshandy.com;
+
+    index media.php;
+
+    error_log /var/log/nginx/localmedia-saleshandy-com-error.log;
+    access_log /var/log/nginx/localmedia-saleshandy-com-access.log;
+
+    root /var/www/localapp.saleshandy.com/html/media;
+
+    location / {
+        try_files $uri /media.php$is_args$args;
+    }
+
+    location ~ \.php {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;
+
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+        fastcgi_index media.php;
+    }
+}
+
+Register virtual host with server configuration:
+$ sudo ln -s /etc/nginx/sites-available/localmedia.saleshandy.com /etc/nginx/sites-enabled/
+
+
+
+====================================
+Setup Data domain host files
+====================================
+
+Create host configuration file:
+$ sudo nano /etc/nginx/sites-available/localdata.saleshandy.com
+
+Add following content:
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name localdata.saleshandy.com;
+
+    index data.php;
+
+    error_log /var/log/nginx/localdata-saleshandy-com-error.log;
+    access_log /var/log/nginx/localdata-saleshandy-com-access.log;
+
+    root /var/www/localapp.saleshandy.com/html/data;
+
+    location / {
+        try_files $uri /data.php$is_args$args;
+    }
+
+    location ~ \.php {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;
+
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+        fastcgi_index data.php;
+    }
+}
+
+Register virtual host with server configuration:
+$ sudo ln -s /etc/nginx/sites-available/localdata.saleshandy.com /etc/nginx/sites-enabled/
+
+
+
+====================================
+Setup webhooks domain host files
+====================================
+
+Create host configuration file:
+$ sudo nano /etc/nginx/sites-available/localwebhooks.saleshandy.com
+
+Add following content:
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name localwebhooks.saleshandy.com;
+
+    index incoming.php;
+
+    error_log /var/log/nginx/localwebhooks-saleshandy-com-error.log;
+    access_log /var/log/nginx/localwebhooks-saleshandy-com-access.log;
+
+    root /var/www/localapp.saleshandy.com/html/webhooks;
+
+    location / {
+        try_files $uri /incoming.php$is_args$args;
+    }
+
+    location ~ \.php {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;
+
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+        fastcgi_index incoming.php;
+    }
+}
+
+Register virtual host with server configuration:
+$ sudo ln -s /etc/nginx/sites-available/localwebhooks.saleshandy.com /etc/nginx/sites-enabled/
+
+
+====================================
+Setup auth domain host files
+====================================
+
+Create host configuration file:
+$ sudo nano /etc/nginx/sites-available/localauth.saleshandy.com
+
+Add following content:
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name localauth.saleshandy.com;
+
+    index index.php;
+
+    error_log /var/log/nginx/localauth-saleshandy-com-error.log;
+    access_log /var/log/nginx/localauth-saleshandy-com-access.log;
+
+    root /var/www/localapp.saleshandy.com/html/auth;
+
+    location / {
+        try_files $uri /index.php$is_args$args;
+    }
+
+    location ~ \.php {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;
+
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+        fastcgi_index index.php;
+    }
+}
+
+Register virtual host with server configuration:
+$ sudo ln -s /etc/nginx/sites-available/localauth.saleshandy.com /etc/nginx/sites-enabled/
+
+
+====================================
+Setup cross platform browser host file
+====================================
+
+Create host configuration file:
+$ sudo nano /etc/nginx/sites-available/localplatform.saleshandy.com
+
+Add following content:
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name localplatform.saleshandy.com;
+
+    index index.html;
+
+    error_log /var/log/nginx/localplatform-saleshandy-com-error.log;
+    access_log /var/log/nginx/localplatform-saleshandy-com-access.log;
+
+    root /var/www/localplatform.saleshandy.com/html/public;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+
+Register virtual host with server configuration:
+$ sudo ln -s /etc/nginx/sites-available/localplatform.saleshandy.com /etc/nginx/sites-enabled/
+
+
+====================================
+Setup admin / qwerty host file
+====================================
+
+Create host configuration file:
+$ sudo nano /etc/nginx/sites-available/localadmin.saleshandy.com
+
+Add following content:
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name localadmin.saleshandy.com;
+
+    index index.html;
+
+    error_log /var/log/nginx/localadmin-saleshandy-com-error.log;
+    access_log /var/log/nginx/localadmin-saleshandy-com-access.log;
+
+    root /var/www/localadmin.saleshandy.com/html/public;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+
+Register virtual host with server configuration:
+$ sudo ln -s /etc/nginx/sites-available/localadmin.saleshandy.com /etc/nginx/sites-enabled/
+
+
+====================================
+Check virtual hosts configuration
+====================================
+
+Check if invalid domain configuration:
+$ sudo nginx -t
+
+Restart the nginx server:
+$ sudo service nginx restart
+
+
+====================================
+Add host entries
+====================================
+
+Open hosts file:
+$ sudo nano /etc/hosts
+
+Add below rules:
+127.0.0.1       localapp.saleshandy.com
+127.0.0.1       localapi.saleshandy.com
+127.0.0.1       localdocs.saleshandy.com
+127.0.0.1       localtrk.saleshandy.com
+127.0.0.1       localmedia.saleshandy.com
+127.0.0.1       localdata.saleshandy.com
+127.0.0.1       localwebhooks.saleshandy.com
+127.0.0.1       localauth.saleshandy.com
+127.0.0.1       localplatform.saleshandy.com
+127.0.0.1       localadmin.saleshandy.com
+
+
+====================================
+Final Steps
+====================================
+
+Read the README.md file for further steps to be taken

@@ -1,0 +1,23 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
+# Import companies
+# Query OK, 153909 rows affected, 65535 warnings (2.06 sec)
+# Records: 153909  Duplicates: 0  Warnings: 1377875
+
+INSERT INTO account_companies 
+    (id, user_id, source_id, name, address, city, state, country, zipcode, logo, website, contact_phone, contact_fax, 
+    short_info, status, created, modified) 
+SELECT 
+    c.id, c.user_id, 1, c.name, c.street, c.city, c.state, c.country, c.postal_code, '', c.website, 
+    c.phone, c.fax, c.notes, 1, 
+    (UNIX_TIMESTAMP(c.created_on)-(60*60*5)-(60*30)), 
+    UNIX_TIMESTAMP() 
+FROM dev_salehandy.company c;
+
+# Set account_id based on the user data
+# Query OK, 153580 rows affected (3.88 sec)
+# Rows matched: 153694  Changed: 153580  Warnings: 0
+
+UPDATE account_companies ac INNER JOIN user_master um ON ac.user_id = um.id SET ac.account_id = um.account_id;
+
+SET FOREIGN_KEY_CHECKS = 1;

@@ -1,0 +1,31 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
+# Import contacts
+# Query OK, 2720298 rows affected, 65535 warnings (41.15 sec)
+# Records: 2720298  Duplicates: 0  Warnings: 10819438
+
+INSERT INTO account_contacts 
+    (id, user_id, account_company_id, source_id, email, first_name, last_name, phone, city, country, 
+    notes, status, is_blocked, created, modified) 
+SELECT 
+    c.id, c.user_id, c.company_id, 1, c.email, 
+    (TRIM(SUBSTR(c.name, LOCATE(" ", c.name) + 1))), 
+    (TRIM(SUBSTR(c.name, 1, LOCATE(" ", c.name) - 1))), 
+    c.phone, c.city, c.country, c.note, 1, 0, 
+    (UNIX_TIMESTAMP(c.created_on)-(60*60*5)-(60*30)), 
+    UNIX_TIMESTAMP() 
+FROM dev_salehandy.contact c;
+
+# Set company id to null if zero
+# Query OK, 234160 rows affected (3.72 sec)
+# Rows matched: 234160  Changed: 234160  Warnings: 0
+
+UPDATE account_contacts SET account_company_id = NULL WHERE account_company_id = 0;
+
+# Set account_id based on the user data
+# Query OK, 2701610 rows affected (1 min 20.99 sec)
+# Rows matched: 2711381  Changed: 2701610  Warnings: 0
+
+UPDATE account_contacts ac INNER JOIN user_master um ON ac.user_id = um.id SET ac.account_id = um.account_id;
+
+SET FOREIGN_KEY_CHECKS = 1;

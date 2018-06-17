@@ -1,0 +1,164 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
+# Import campaigns - main campaigns
+# Query OK, 39436 rows affected (16.80 sec)
+# Records: 39436  Duplicates: 0  Warnings: 0
+
+INSERT INTO campaign_master 
+    (id, user_id, title, account_sending_method_id, source_id, total_stages, from_date, to_date, timezone, other_data, 
+    status_message, track_reply, track_click, send_as_reply, overall_progress, priority, is_bulk_campaign, 
+    snooze_notifications, status, created, modified) 
+SELECT 
+    ncm.id, ncm.user_id, ncm.title, ncm.sending_method, 1, ncm.total_stages, 0, 0, ncm.timezone, ncm.other_data, 
+    (CASE WHEN ncm.system_error IS NULL THEN '' ELSE ncm.system_error END), 
+    ncm.track_reply, ncm.track_link_click, ncm.send_as_thread, ncm.overall_progress, ncm.priority, ncm.is_bulk_campaign, 
+    1, ncm.status, 
+    (UNIX_TIMESTAMP(ncm.created)-(60*60*5)-(60*30)), 
+    (UNIX_TIMESTAMP(ncm.modified)-(60*60*5)-(60*30)) 
+FROM dev_salehandy.new_campaign_master ncm 
+WHERE parent_id = 0;
+
+# Set account_id based on the user data
+# Query OK, 39403 rows affected (1.30 sec)
+# Rows matched: 39436  Changed: 39403  Warnings: 0
+
+UPDATE campaign_master cm INNER JOIN user_master um ON cm.user_id = um.id SET cm.account_id = um.account_id;
+
+# Import campaigns - stages 
+# Query OK, 79409 rows affected, 29022 warnings (1 min 1.84 sec)
+# Records: 79409  Duplicates: 0  Warnings: 29022
+
+INSERT INTO campaign_stages 
+    (id, user_id, campaign_id, subject, content, account_template_id, stage, stage_defination, scheduled_on, 
+    track_reply_max_date, progress, locked, total_contacts, total_success, total_fail, total_deleted, started_on, 
+    finished_on, report_sent, status, created, modified) 
+SELECT 
+    ncm.id, ncm.user_id, 
+    (CASE WHEN ncm.parent_id = 0 THEN ncm.id ELSE ncm.parent_id END), 
+    ncm.subject, ncm.content, ncm.template_id, ncm.stage, ncm.stage_defination, 
+    (UNIX_TIMESTAMP(ncm.next_run_at)-(60*60*5)-(60*30)), 
+    (CASE WHEN ncm.track_reply_max_date IS NULL THEN 0 ELSE (UNIX_TIMESTAMP(ncm.track_reply_max_date)-(60*60*5)-(60*30)) END), 
+    ncm.progress, ncm.locked, ncm.total_contacts, ncm.total_success, ncm.total_fail, ncm.total_deleted, 
+    (UNIX_TIMESTAMP(ncm.started_on)-(60*60*5)-(60*30)), 
+    (UNIX_TIMESTAMP(ncm.finish_on)-(60*60*5)-(60*30)), 
+    ncm.report_sent, ncm.status, 
+    (UNIX_TIMESTAMP(ncm.created)-(60*60*5)-(60*30)), 
+    (UNIX_TIMESTAMP(ncm.modified)-(60*60*5)-(60*30)) 
+FROM dev_salehandy.new_campaign_master ncm;
+
+# Set account_id based on the user data
+# Query OK, 79375 rows affected (1 min 55.36 sec)
+# Rows matched: 79409  Changed: 79375  Warnings: 0
+
+UPDATE campaign_stages cs INNER JOIN user_master um ON cs.user_id = um.id SET cs.account_id = um.account_id;
+
+# Import sequences
+# Query OK, 7359760 rows affected, 65535 warnings (22 min 2.84 sec)
+# Records: 7359760  Duplicates: 0  Warnings: 23961761
+# 2nd time
+# Query OK, 7359760 rows affected, 65535 warnings (25 min 14.99 sec)
+# Records: 7359760  Duplicates: 0  Warnings: 23961761
+# 3rd time
+# Query OK, 7359760 rows affected, 65535 warnings (6 min 7.75 sec)
+# Records: 7359760  Duplicates: 0  Warnings: 23961761
+# Instance 2nd
+# Query OK, 8030686 rows affected, 65535 warnings (7 min 40.61 sec)
+# Records: 8030686  Duplicates: 0  Warnings: 26207321
+
+INSERT INTO campaign_sequences 
+    (id, campaign_id, campaign_stage_id, email, csv_payload, progress, is_bounce, scheduled_at, sent_at, 
+    message_send_id, sent_response, locked, locked_date, open_count, last_opened, replied, last_replied, 
+    reply_check_count, reply_last_checked, click_count, last_clicked, status, created, modified) 
+SELECT 
+    ncs.id, ncs.campaign_id, ncs.campaign_stage_id, ncs.email, ncs.fields_payload, ncs.progress, ncs.is_bounce, 
+    (UNIX_TIMESTAMP(ncs.scheduled_at)-(60*60*5)-(60*30)), 
+    (UNIX_TIMESTAMP(ncs.sent_at)-(60*60*5)-(60*30)), 
+    ncs.message_send_id, ncs.sent_response, ncs.locked, 
+    (UNIX_TIMESTAMP(ncs.locked_date)-(60*60*5)-(60*30)), 
+    ncs.open_count, 
+    (UNIX_TIMESTAMP(ncs.last_opened)-(60*60*5)-(60*30)),
+    ncs.replied_count, 
+    (UNIX_TIMESTAMP(ncs.last_replied)-(60*60*5)-(60*30)), 
+    ncs.reply_check_count, 
+    (UNIX_TIMESTAMP(ncs.reply_last_checked)-(60*60*5)-(60*30)), 
+    ncs.click_count, 
+    (UNIX_TIMESTAMP(ncs.last_visited)-(60*60*5)-(60*30)), 
+    ncs.status, 
+    (UNIX_TIMESTAMP(ncs.created)-(60*60*5)-(60*30)), 
+    (UNIX_TIMESTAMP(ncs.modified)-(60*60*5)-(60*30)) 
+FROM dev_salehandy.new_campaign_sequence ncs;
+
+# Import campaign sequence logs
+# Query OK, 10456975 rows affected, 6153 warnings (5 min 44.74 sec)
+# Records: 10456975  Duplicates: 0  Warnings: 6153
+# 2nd time
+# Query OK, 10456975 rows affected, 6153 warnings (7 min 36.16 sec)
+# Records: 10456975  Duplicates: 0  Warnings: 6153
+# 3rd time
+# Query OK, 10456975 rows affected, 6153 warnings (13 min 11.29 sec)
+# Records: 10456975  Duplicates: 0  Warnings: 6153
+# Instance 2
+# Query OK, 11264330 rows affected, 6153 warnings (3 min 20.46 sec)
+# Records: 11264330  Duplicates: 0  Warnings: 6153
+
+INSERT INTO campaign_logs 
+    (id, campaign_id, campaign_stage_id, campaign_sequence_id, log, log_type, created) 
+SELECT 
+    ncl.id, ncl.campaign_id, ncl.campaign_stage_id, ncl.campaign_sequence_id, ncl.log, ncl.log_type, 
+    (UNIX_TIMESTAMP(ncl.created)-(60*60*5)-(60*30)) 
+FROM dev_salehandy.new_campaign_logs ncl;
+
+# Import campaign links
+# Query OK, 14325525 rows affected, 65535 warnings (8 min 57.34 sec)
+# Records: 14325525  Duplicates: 0  Warnings: 14175664
+# 3rd time
+# Query OK, 14325525 rows affected, 65535 warnings (21 min 59.36 sec)
+# Records: 14325525  Duplicates: 0  Warnings: 14175664
+
+# Instance 2
+# Query OK, 16165441 rows affected, 65535 warnings (5 min 35.26 sec)
+# Records: 16165441  Duplicates: 0  Warnings: 16008382
+
+INSERT INTO campaign_links 
+    (id, campaign_id, campaign_stage_id, campaign_sequence_id, url, utm, total_clicked, last_clicked, modified) 
+SELECT 
+    ncl.id, ncl.campaign_id, ncl.campaign_stage_id, ncl.campaign_sequence_id, SUBSTRING(ncl.url, 1, 2048), ncl.utm, ncl.opens, 
+    (UNIX_TIMESTAMP(ncl.last_open_time)-(60*60*5)-(60*30)), 
+    UNIX_TIMESTAMP() 
+FROM dev_salehandy.new_campaign_links ncl;
+
+# Set account id based on the campaign data 
+# Query OK, 14325525 rows affected (2 hours 53 min 12.82 sec)
+# Rows matched: 14325525  Changed: 14325525  Warnings: 0
+# Query OK, 14325525 rows affected (59 min 48.69 sec)
+# Rows matched: 14325525  Changed: 14325525  Warnings: 0
+
+# Query OK, 16165441 rows affected (10 min 29.08 sec)
+# Rows matched: 16165441  Changed: 16165441  Warnings: 0
+
+UPDATE campaign_links cl INNER JOIN campaign_master cm ON cl.campaign_id = cm.id SET cl.account_id = cm.account_id;
+
+# Import domain blocklist
+# Query OK, 9157 rows affected (56.94 sec)
+# Records: 9157  Duplicates: 0  Warnings: 0
+
+INSERT INTO campaign_domain_blocklist 
+    (id, user_id, domain, status, modified) 
+SELECT 
+    ncdb.id, ncdb.group_id, ncdb.domain, 1, UNIX_TIMESTAMP() 
+FROM dev_salehandy.new_campaign_domain_blocklist ncdb;
+
+# Set account_id based on the user data
+# Query OK, 9157 rows affected (28.73 sec)
+# Rows matched: 9157  Changed: 9157  Warnings: 0
+
+UPDATE campaign_domain_blocklist cdb INNER JOIN user_master um ON cdb.user_id = um.id SET cdb.account_id = um.account_id;
+
+#  Set account_contact_id from email on the campaign_sequences data (Running)
+Update campaign_sequences SET account_contact_id = (SELECT GET_AccountContactID_From_CampSeqId(id));
+
+#  Set account_link_id from url on the campaign_links data
+Update campaign_links SET account_link_id = (SELECT GET_AccountLinkID_From_CampLinkId(id));
+
+SET FOREIGN_KEY_CHECKS = 1;
+

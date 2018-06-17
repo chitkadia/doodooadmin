@@ -1,0 +1,14 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
+# Set user resources
+# Query OK, 2782650 rows affected (18.75 sec)
+# Records: 2782650  Duplicates: 0  Warnings: 0
+
+INSERT INTO user_resources 
+    (user_id, resource_id, status, modified) 
+SELECT 
+    um.id, rdr.resource_id, 1, UNIX_TIMESTAMP() 
+FROM user_master um 
+INNER JOIN role_default_resources rdr ON um.role_id = rdr.role_id;
+
+SET FOREIGN_KEY_CHECKS = 1;

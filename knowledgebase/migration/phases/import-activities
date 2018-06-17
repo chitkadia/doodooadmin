@@ -1,0 +1,27 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
+# Fetch only those activities for email sent, scheduled and open
+INSERT INTO activity 
+    (id, user_id, account_contact_id, record_id, action_id, action_group_id, other_data, created) 
+SELECT 
+    a.id, 
+    a.user_id, 
+    (CASE WHEN (e.gmail_group IS NULL OR e.gmail_group = e.contact_id) THEN e.contact_id ELSE NULL END), 
+    a.model_id, 
+    (CASE WHEN a.type = 'email_scheduled' THEN 3 WHEN a.type = 'email_text_open' THEN 5 ELSE 2 END), 
+    (CASE WHEN (a.type = 'email' OR a.type = 'email_text_open' OR a.type = 'email_scheduled') THEN 1 ELSE NULL END), 
+    (CASE WHEN a.type = 'email_text_open' THEN CONCAT('{"ip":"', a.ipaddress, '","c":"', a.city, '","s":"', a.state, '","co":"', a.country, '","ua":"', a.user_agent, '","bn":"', a.browser_name, '","bv":"', a.version, '","os":"', a.os_platform, '"}') ELSE '' END), 
+    (UNIX_TIMESTAMP(a.created_at)-(60*60*5)-(60*30)) 
+FROM dev_salehandy.activity a 
+INNER JOIN dev_salehandy.email e ON a.model_id = e.id AND a.contact_id = e.contact_id;
+
+# Delete other activities which got imported but not useful
+DELETE FROM activity WHERE action_group_id IS NULL;
+
+# Set other_data to empty where data not required
+#UPDATE activity SET other_data = '' WHERE action_id <> 5;
+
+# Set account_id based on the user data
+UPDATE activity a INNER JOIN user_master um ON a.user_id = um.id SET a.account_id = um.account_id;
+
+SET FOREIGN_KEY_CHECKS = 1;

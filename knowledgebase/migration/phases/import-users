@@ -1,0 +1,36 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
+# Import users
+#Query OK, 45105 rows affected, 60410 warnings (1.03 sec)
+#Records: 45105  Duplicates: 0  Warnings: 60410
+
+INSERT INTO user_master 
+    (id, account_id, user_type_id, role_id, source_id, first_name, last_name, email, password, password_salt_key, photo, phone, last_login, sh_referer, nl_subscribed, verified, status, created, modified) 
+SELECT 
+    u.id, u.group_id, 
+    (CASE WHEN u.id = u.group_id THEN 4 ELSE 5 END), 
+    (CASE WHEN u.id = u.group_id THEN 8 ELSE 16 END), 
+    1, u.fname, u.lname, u.email, u.password, '', '', u.phone, 
+    (UNIX_TIMESTAMP(u.last_login)-(60*60*5)-(60*30)), 
+    u.shrefere, u.nl_subscribed, u.is_verfied, 
+    (CASE WHEN u.is_deleted = 0 THEN 1 WHEN u.is_deleted = 2 THEN 2 ELSE 3 END), 
+    (UNIX_TIMESTAMP(u.created_at)-(60*60*5)-(60*30)), 
+    UNIX_TIMESTAMP() 
+FROM dev_salehandy.user u;
+
+# Import Accounts
+# Query OK, 43719 rows affected, 65535 warnings (0.45 sec)
+# Records: 43719  Duplicates: 0  Warnings: 87438
+
+INSERT INTO account_master 
+    (id, ac_number, source_id, configuration, status, created, modified) 
+SELECT 
+    u.id, 
+    CONCAT("SHAPP-", STR_TO_DATE(u.created_at, "%Y%m%d%H%i%s"), "-", (FLOOR(RAND()*1000))), 
+    1, '{}', 
+    (CASE WHEN u.is_deleted = 2 THEN 2 ELSE 1 END), 
+    (UNIX_TIMESTAMP(u.created_at)-(60*60*5)-(60*30)), 
+    UNIX_TIMESTAMP() 
+FROM dev_salehandy.user u WHERE u.id = u.group_id AND u.parent_id = 0;
+
+SET FOREIGN_KEY_CHECKS = 1;

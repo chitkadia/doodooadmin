@@ -1,0 +1,76 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
+# Import BCC
+# Query OK, 600 rows affected (0.11 sec)
+# Records: 600  Duplicates: 0  Warnings: 0
+
+INSERT INTO user_settings
+    (user_id, app_constant_var_id, value, modified) 
+SELECT 
+    us.user_id, 4, us.bcc_to_crm, UNIX_TIMESTAMP() 
+FROM dev_salehandy.user_settings us INNER JOIN dev_salehandy.user u ON us.user_id = u.id 
+WHERE us.bcc_to_crm <> '' AND us.bcc_to_crm IS NOT NULL;
+
+# Import Timezone
+# Query OK, 3152 rows affected (0.09 sec)
+# Records: 3152  Duplicates: 0  Warnings: 0
+
+INSERT INTO user_settings 
+    (user_id, app_constant_var_id, value, modified) 
+SELECT 
+    u.id, 16, u.time_zone, UNIX_TIMESTAMP() 
+FROM dev_salehandy.user u 
+WHERE u.time_zone <> '' AND u.time_zone IS NOT NULL;
+
+# Import Notifications
+# Query OK, 45105 rows affected (0.42 sec)
+# Records: 45105  Duplicates: 0  Warnings: 0
+
+INSERT INTO user_settings 
+    (user_id, app_constant_var_id, value, modified) 
+SELECT 
+    um.id, 17, 1, UNIX_TIMESTAMP() 
+FROM user_master um;
+
+# Import Track Email
+# Query OK, 45099 rows affected (0.38 sec)
+# Records: 45099  Duplicates: 0  Warnings: 0
+
+INSERT INTO user_settings 
+    (user_id, app_constant_var_id, value, modified) 
+SELECT 
+    us.user_id, 10, (CASE WHEN us.always_on = 1 THEN 1 ELSE 0 END), UNIX_TIMESTAMP() 
+FROM dev_salehandy.user_settings us INNER JOIN dev_salehandy.user u ON us.user_id = u.id;
+
+# Import Track Links
+# Query OK, 45105 rows affected (0.29 sec)
+# Records: 45105  Duplicates: 0  Warnings: 0
+
+INSERT INTO user_settings 
+    (user_id, app_constant_var_id, value, modified) 
+SELECT 
+    um.id, 12, 1, UNIX_TIMESTAMP() 
+FROM user_master um;
+
+# Import Powerd By SH
+# Query OK, 45099 rows affected (0.35 sec)
+# Records: 45099  Duplicates: 0  Warnings: 0
+
+INSERT INTO user_settings 
+    (user_id, app_constant_var_id, value, modified) 
+SELECT 
+    us.user_id, 13, (CASE WHEN us.always_on = 1 THEN 0 ELSE 1 END), UNIX_TIMESTAMP() 
+FROM dev_salehandy.user_settings us INNER JOIN dev_salehandy.user u ON us.user_id = u.id;
+
+# Import Signature
+# Query OK, 5635 rows affected (0.38 sec)
+# Records: 5635  Duplicates: 0  Warnings: 0
+
+INSERT INTO user_settings 
+    (user_id, app_constant_var_id, value, modified) 
+SELECT 
+    u.id, 9, u.signature, UNIX_TIMESTAMP() 
+FROM dev_salehandy.user u 
+WHERE u.signature <> '' AND u.signature IS NOT NULL;
+
+SET FOREIGN_KEY_CHECKS = 1;

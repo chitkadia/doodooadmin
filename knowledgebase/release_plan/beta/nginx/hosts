@@ -1,0 +1,456 @@
+====================================
+Prerequisite for upload
+====================================
+
+1. Server with ssh login should be available
+2. All required packages on the server should be installed (nginx, php, mysql etc)
+3. Cloudflare mapping to the domains / sub-domains should be done
+4. Repositories and builds must be available to upload
+    4.1 Repository of general source like APIs, Track, Cronjobs etc
+    4.1 Working build of Web App
+    4.2 Working build of Cross Platform Browser App
+    4.3 Working build of Admin App
+5. Stripe account for beta release customers data
+6. Connect with the server and perform below mentioned steps
+
+
+====================================
+Create source code folders
+====================================
+
+$ sudo cd /var/www/html/saleshandy.net/
+
+$ sudo mkdir source
+
+$ sudo mkdir web
+
+$ sudo mkdir platform
+
+$ sudo mkdir admin
+
+
+====================================
+Clone repositories
+====================================
+
+$ cd /var/www/html/saleshandy.net/source/
+
+$ git clone https://gitlab.com/saleshandy-app/core/webapp-v2.git .
+
+
+$ cd /var/www/html/saleshandy.net/web/
+
+$ sudo wget <path-to-build-file>
+
+$ sudo unzip -x <path-to-downloaded-file>
+
+$ sudo mv dist public
+
+
+$ cd /var/www/html/saleshandy.net/platform/
+
+$ sudo wget <path-to-build-file>
+
+$ sudo unzip -x <path-to-downloaded-file>
+
+$ sudo mv dist public
+
+
+$ cd /var/www/html/saleshandy.net/admin/
+
+$ sudo wget <path-to-build-file>
+
+$ sudo unzip -x <path-to-downloaded-file>
+
+$ sudo mv dist public
+
+
+====================================
+Setup web application host file
+====================================
+
+Create host configuration file:
+$ sudo nano /etc/nginx/sites-available/app.saleshandy.net
+
+Add following content:
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name app.saleshandy.net;
+
+    index index.html;
+
+    error_log /var/log/nginx/app-saleshandy-net-error.log;
+    access_log /var/log/nginx/app-saleshandy-net-access.log;
+
+    root /var/www/html/saleshandy.net/web/public;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+
+Register virtual host with server configuration:
+$ sudo ln -s /etc/nginx/sites-available/app.saleshandy.net /etc/nginx/sites-enabled/
+
+
+====================================
+Setup APIs host file
+====================================
+
+Create host configuration file:
+$ sudo nano /etc/nginx/sites-available/api.saleshandy.net
+
+Add following content:
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name api.saleshandy.net;
+
+    index api.php;
+
+    error_log /var/log/nginx/api-saleshandy-net-error.log;
+    access_log /var/log/nginx/api-saleshandy-net-access.log;
+
+    root /var/www/html/saleshandy.net/source/api;
+
+    location / {
+        try_files $uri /api.php$is_args$args;
+    }
+
+    location ~ \.php {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;
+
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+        fastcgi_index api.php;
+    }
+}
+
+Register virtual host with server configuration:
+$ sudo ln -s /etc/nginx/sites-available/api.saleshandy.net /etc/nginx/sites-enabled/
+
+
+====================================
+Setup document viewer host file
+====================================
+
+Create host configuration file:
+$ sudo nano /etc/nginx/sites-available/present.saleshandy.net
+
+Add following content:
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name present.saleshandy.net;
+
+    index view.php;
+
+    error_log /var/log/nginx/present-saleshandy-net-error.log;
+    access_log /var/log/nginx/present-saleshandy-net-access.log;
+
+    root /var/www/html/saleshandy.net/source/docs;
+
+    location / {
+        try_files $uri /view.php$is_args$args;
+    }
+
+    location ~ \.php {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;
+
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+        fastcgi_index view.php;
+    }
+}
+
+Register virtual host with server configuration:
+$ sudo ln -s /etc/nginx/sites-available/present.saleshandy.net /etc/nginx/sites-enabled/
+
+
+====================================
+Setup tracker domain host files
+====================================
+
+Create host configuration file:
+$ sudo nano /etc/nginx/sites-available/go.saleshandy.net
+
+Add following content:
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name go.saleshandy.net;
+
+    index track.php;
+
+    error_log /var/log/nginx/go-saleshandy-net-error.log;
+    access_log /var/log/nginx/go-saleshandy-net-access.log;
+
+    root /var/www/html/saleshandy.net/source/track;
+
+    location / {
+        try_files $uri /track.php$is_args$args;
+    }
+
+    location ~ \.php {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;
+
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+        fastcgi_index track.php;
+    }
+}
+
+Register virtual host with server configuration:
+$ sudo ln -s /etc/nginx/sites-available/go.saleshandy.net /etc/nginx/sites-enabled/
+
+
+Create host configuration file:
+$ sudo nano /etc/nginx/sites-available/track.saleshandy.net
+
+Add following content:
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name track.saleshandy.net;
+
+    index track.php;
+
+    error_log /var/log/nginx/track-saleshandy-net-error.log;
+    access_log /var/log/nginx/track-saleshandy-net-access.log;
+
+    root /var/www/html/saleshandy.net/source/track;
+
+    location / {
+        try_files $uri /track.php$is_args$args;
+    }
+
+    location ~ \.php {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;
+
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+        fastcgi_index track.php;
+    }
+}
+
+Register virtual host with server configuration:
+$ sudo ln -s /etc/nginx/sites-available/track.saleshandy.net /etc/nginx/sites-enabled/
+
+
+====================================
+Setup media domain host files
+====================================
+
+Create host configuration file:
+$ sudo nano /etc/nginx/sites-available/media.saleshandy.net
+
+Add following content:
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name media.saleshandy.net;
+
+    index media.php;
+
+    error_log /var/log/nginx/media-saleshandy-net-error.log;
+    access_log /var/log/nginx/media-saleshandy-net-access.log;
+
+    root /var/www/html/saleshandy.net/source/media;
+
+    location / {
+        try_files $uri /media.php$is_args$args;
+    }
+
+    location ~ \.php {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;
+
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+        fastcgi_index media.php;
+    }
+}
+
+Register virtual host with server configuration:
+$ sudo ln -s /etc/nginx/sites-available/media.saleshandy.net /etc/nginx/sites-enabled/
+
+
+====================================
+Setup webhooks domain host files
+====================================
+
+Create host configuration file:
+$ sudo nano /etc/nginx/sites-available/wh.saleshandy.net
+
+Add following content:
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name wh.saleshandy.net;
+
+    index incoming.php;
+
+    error_log /var/log/nginx/wh-saleshandy-net-error.log;
+    access_log /var/log/nginx/wh-saleshandy-net-access.log;
+
+    root /var/www/html/saleshandy.net/source/webhooks;
+
+    location / {
+        try_files $uri /incoming.php$is_args$args;
+    }
+
+    location ~ \.php {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;
+
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+        fastcgi_index incoming.php;
+    }
+}
+
+Register virtual host with server configuration:
+$ sudo ln -s /etc/nginx/sites-available/wh.saleshandy.net /etc/nginx/sites-enabled/
+
+
+====================================
+Setup auth domain host files
+====================================
+
+Create host configuration file:
+$ sudo nano /etc/nginx/sites-available/auth.saleshandy.net
+
+Add following content:
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name auth.saleshandy.net;
+
+    index index.php;
+
+    error_log /var/log/nginx/auth-saleshandy-net-error.log;
+    access_log /var/log/nginx/auth-saleshandy-net-access.log;
+
+    root /var/www/html/saleshandy.net/source/auth;
+
+    location / {
+        try_files $uri /index.php$is_args$args;
+    }
+
+    location ~ \.php {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;
+
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+        fastcgi_index index.php;
+    }
+}
+
+Register virtual host with server configuration:
+$ sudo ln -s /etc/nginx/sites-available/auth.saleshandy.net /etc/nginx/sites-enabled/
+
+
+====================================
+Setup cross platform browser host file
+====================================
+
+Create host configuration file:
+$ sudo nano /etc/nginx/sites-available/platform.saleshandy.net
+
+Add following content:
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name platform.saleshandy.net;
+
+    index index.html;
+
+    error_log /var/log/nginx/platform-saleshandy-net-error.log;
+    access_log /var/log/nginx/platform-saleshandy-net-access.log;
+
+    root /var/www/html/saleshandy.net/platform/public;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+
+Register virtual host with server configuration:
+$ sudo ln -s /etc/nginx/sites-available/platform.saleshandy.net /etc/nginx/sites-enabled/
+
+
+====================================
+Setup admin / qwerty host file
+====================================
+
+Create host configuration file:
+$ sudo nano /etc/nginx/sites-available/admin.saleshandy.net
+
+Add following content:
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name admin.saleshandy.net;
+
+    index index.html;
+
+    error_log /var/log/nginx/admin-saleshandy-net-error.log;
+    access_log /var/log/nginx/admin-saleshandy-net-access.log;
+
+    root /var/www/html/saleshandy.net/admin/public;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+
+Register virtual host with server configuration:
+$ sudo ln -s /etc/nginx/sites-available/admin.saleshandy.net /etc/nginx/sites-enabled/
+
+
+====================================
+Check virtual hosts configuration
+====================================
+
+Check if invalid domain configuration:
+$ sudo nginx -t
+
+Restart the nginx server:
+$ sudo service nginx restart
+
+
+====================================
+Final Steps
+====================================
+
+Read the README.md file for further steps to be taken

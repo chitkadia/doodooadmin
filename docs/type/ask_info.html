@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+<title><?php echo $page_title; ?></title>
+<link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet" />
+<link rel="stylesheet" media="all" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" />
+<link rel="stylesheet" media="all" href="/css/viewer.css" />
+<script>
+var _A = "<?php echo $a; ?>";
+var _B = "<?php echo $b; ?>";
+var _C = "<?php echo $c; ?>";
+var _D = "<?php echo $d; ?>";
+var _E = "<?php echo $e; ?>";
+var _F = "<?php echo $f; ?>";
+var _M = "<?php echo $m; ?>";
+var _T = "<?php echo $t; ?>";
+</script>
+</head>
+
+<body class="body-ask-info">
+<?php echo $viewer_header_content; ?>
+
+<form onsubmit="return validate_ask_info_page();">
+    <div class="form-container shadow-div">
+        <?php if ($show_email) { ?>
+        <div class="form-header-info"><span class="ion-person"></span>&nbsp; Contact Details</div>
+        
+        <div class="form-row-label">Email Address</div>
+        <div class="form-row-control">
+            <input type="text" name="email_address" id="email_address" placeholder="Email Address" />
+        </div>
+        <?php } ?>
+
+        <?php if ($show_name) { ?>
+        <div class="form-row-label">Full Name</div>
+        <div class="form-row-control">
+            <input type="text" name="full_name" id="full_name" placeholder="Full Name" />
+        </div>
+        <?php } ?>
+
+        <?php if ($show_company) { ?>
+        <div class="form-row-label">Company Name</div>
+        <div class="form-row-control">
+            <input type="text" name="company_name" id="company_name" placeholder="Company Name" />
+        </div>
+        <?php } ?>
+
+        <?php if ($show_phone) { ?>
+        <div class="form-row-label">Contact Number</div>
+        <div class="form-row-control">
+            <input type="text" name="contact_number" id="contact_number" placeholder="Contact Number" />
+        </div>
+        <?php } ?>
+
+        <?php if ($show_password) { ?>
+        <div>&nbsp;</div>
+        <div class="form-header-info"><span class="ion-locked"></span>&nbsp; Secured Access</div>
+        <div class="form-row-label">Password</div>
+        <div class="form-row-control">
+            <input type="password" name="access_password" id="access_password" placeholder="Password" />
+        </div>
+        <?php } ?>
+
+        <div>&nbsp;</div>
+        <div class="form-submit">
+            <button type="submit" class="submit-btn" id="access_link">Access Link</button>
+        </div>
+    </div>
+</form>
+
+<div class="overlay" id="overlay"></div>
+
+<script src="/js/shlib.js"></script>
+<script src="/js/ask_info.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+# ignore vendors
+/vendor/
+
+# ignore log, cache files
+/logs/*
+/cache/*
+/knowledgebase/migration/logs/*
+/media/uploads/*
+/upload/*
+/uploads/*
+
+# ignore composer lock file
+composer.lock

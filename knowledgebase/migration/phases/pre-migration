@@ -1,0 +1,116 @@
+# Have database ready
+# TIME : 0 seconds
+CREATE DATABASE sh_app_new CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+# Import database from knowledgebase/db_schema/sh_app_rebuild.sql
+# TIME : 3 minutes # 1 min 30 sec
+# Import alteration of database from knowledgebase/db_schema/post_db_queries.sql
+# TIME : 0 seconds
+
+# Temporary changes to the database
+# TIME : 2 seconds
+ALTER TABLE `account_contacts` ADD `user_id` INT(10) UNSIGNED NULL DEFAULT NULL AFTER `account_id`;
+
+ALTER TABLE `account_companies` ADD `user_id` INT(10) UNSIGNED NULL DEFAULT NULL AFTER `account_id`;
+
+ALTER TABLE `campaign_sequences` ADD `email` VARCHAR(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' AFTER `account_contact_id`;
+
+ALTER TABLE `campaign_links` ADD `url` VARCHAR(2048) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL AFTER `account_link_id`;
+
+ALTER TABLE `document_link_visits` ADD `stamp` VARCHAR(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL AFTER `account_contact_id`;
+
+ALTER TABLE `document_link_visit_logs` ADD `stamp` VARCHAR(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL AFTER `visit_id`;
+
+
+# To update account_contact_id in campaign_sequence table from camp_seq_id 
+# TIME 0 seconds
+DELIMITER $$
+CREATE FUNCTION GET_AccountContactID_From_CampSeqId(camp_seq_id INT) RETURNS INT
+DETERMINISTIC
+BEGIN
+DECLARE ACCOUNT_CONTACT_ID INT;
+    DECLARE EMAIL VARCHAR(255);
+    DECLARE ACCOUNT_ID VARCHAR(255);    
+        SELECT ac.id INTO ACCOUNT_CONTACT_ID
+        FROM `campaign_sequences` AS csq 
+        INNER JOIN campaign_master cm on cm.id = csq.campaign_id 
+        INNER JOIN account_contacts ac on ac.account_id = cm.account_id 
+        WHERE ac.email = csq.email and csq.id= camp_seq_id LIMIT 1;  
+ 	IF ACCOUNT_CONTACT_ID IS NULL THEN
+        SELECT csq.email, cm.account_id INTO EMAIL, ACCOUNT_ID 
+        FROM `campaign_sequences` csq 
+        INNER JOIN campaign_master cm on cm.id = csq.campaign_id 
+        WHERE csq.id =camp_seq_id;		
+		IF ACCOUNT_ID IS NOT NULL THEN
+			INSERT INTO account_contacts(account_id, email) VALUES (ACCOUNT_ID, EMAIL);			
+			SELECT LAST_INSERT_ID() INTO ACCOUNT_CONTACT_ID;
+		END IF;
+    END IF;
+ RETURN (ACCOUNT_CONTACT_ID);
+END$$
+DELIMITER ;
+
+# To update account_link_id in campaign_links table from camp_link_id
+# TIME 0 seconds
+
+DELIMITER $$
+CREATE FUNCTION GET_AccountLinkID_From_CampLinkId(camp_link_id INT) RETURNS INT
+    DETERMINISTIC
+BEGIN
+	DECLARE ACCOUNT_LINK_ID INT;
+    DECLARE URL VARCHAR(255);
+    DECLARE ACCOUNT_ID VARCHAR(255);    
+        SELECT alm.id INTO ACCOUNT_LINK_ID
+        FROM `campaign_links` AS cl 
+        INNER JOIN campaign_master cm on cm.id = cl.campaign_id 
+        INNER JOIN account_link_master alm on alm.account_id = cm.account_id 
+        WHERE alm.url = cl.url and cl.id= camp_link_id;  
+ 	IF ACCOUNT_LINK_ID IS NULL THEN
+        SELECT cl.url, cm.account_id INTO URL, ACCOUNT_ID 
+        FROM `campaign_links` cl 
+        INNER JOIN campaign_master cm on cm.id = cl.campaign_id 
+        WHERE cl.id = camp_link_id;
+		IF ACCOUNT_ID IS NOT NULL THEN
+			INSERT INTO account_link_master(account_id, url) VALUES (ACCOUNT_ID, URL);        
+			SELECT LAST_INSERT_ID() INTO ACCOUNT_LINK_ID;
+		END IF;
+    END IF;
+ RETURN (ACCOUNT_LINK_ID);
+END$$
+DELIMITER ;
+
+
+# To Insert Recipient from gmail_group
+# TIME 0 seconds
+
+DELIMITER $$
+CREATE FUNCTION Insert_Gmail_Recipient(emailId INT)
+RETURNS INT
+DETERMINISTIC
+BEGIN
+DECLARE StartIndex INT;
+DECLARE EndIndex INT;
+DECLARE Input VARCHAR(500);
+DECLARE CONTACT_ID INT;	
+DECLARE OUTPUT INT;
+SET StartIndex = 1;
+SET OUTPUT = 0;
+SELECT gmail_group INTO Input from dev_salehandy.email where id = emailId LIMIT 1;
+IF INPUT IS NOT NULL THEN
+SET Input = CONCAT(Input, ',');
+WHILE INSTR(Input,",") > 0 DO
+SET EndIndex = INSTR( Input,",");
+SET CONTACT_ID = SUBSTRING(Input, StartIndex, EndIndex - 1);
+SET Input = SUBSTRING(Input, EndIndex + 1, LENGTH(Input));
+IF (CONTACT_ID IS NOT NULL AND ENDINDEX > 0) THEN
+INSERT INTO `email_recipients`(email_id,account_contact_id,progress,modified) VALUES(emailId,CONTACT_ID,1,UNIX_TIMESTAMP());
+SET OUTPUT = OUTPUT + 1;
+END IF;
+END WHILE;
+END IF;
+RETURN OUTPUT;
+END$$
+DELIMITER ;
+
+# TO verify inserted function list
+SELECT name from mysql.proc WHERE DB = 'sh_app_new';

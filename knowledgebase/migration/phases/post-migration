@@ -1,0 +1,14 @@
+# Undo temporary changes of database
+ALTER TABLE `account_companies` DROP `user_id`;
+
+ALTER TABLE `account_contacts` DROP `user_id`;
+
+ALTER TABLE `campaign_sequences` DROP `email`;
+
+ALTER TABLE `campaign_links` DROP `url`;
+
+ALTER TABLE `document_link_visits` DROP `stamp`;
+
+ALTER TABLE `document_link_visit_logs` DROP `stamp`;
+
+# Execute triggers on migrated database from knowledgebase/db_schema/sh_app_trigger.sql

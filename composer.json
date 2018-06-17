@@ -1,0 +1,26 @@
+{
+    "require": {
+        "slim/slim": "^3.8",
+        "slim/flash": "^0.2.0",
+        "slim/csrf": "^0.8.1",
+        "phpmailer/phpmailer": "^5.2",
+        "slim/pdo": "^1.10",
+        "hashids/hashids": "^2.0",
+        "google/apiclient": "^2.0",
+        "aws/aws-sdk-php": "^3.34",
+        "stripe/stripe-php": "^5.2"
+    },
+
+    "autoload": {
+        "psr-4": {
+            "App\\Database\\": "src/Database",
+            "App\\Controllers\\": "src/Controllers",
+            "App\\Models\\": "src/Models",
+            "App\\Components\\": "src/Components",
+            "App\\Commands\\": "src/Commands",
+            "App\\Track\\": "src/Track",
+            "App\\Viewer\\": "src/Viewer",
+            "App\\Data\\": "src/Data"
+        }
+    }
+}

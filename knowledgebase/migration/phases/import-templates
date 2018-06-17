@@ -1,0 +1,24 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
+# Import templates
+# Query OK, 223420 rows affected, 143 warnings (26.47 sec)
+# Records: 223420  Duplicates: 0  Warnings: 143
+
+INSERT INTO account_templates 
+    (id, user_id, source_id, title, subject, content, public, share_access, status, created, modified) 
+SELECT 
+    t.id, t.user_id, 1, t.title, t.subject, t.content, 
+    (CASE WHEN t.group_id = 0 THEN 0 ELSE 1 END), 
+    '{"can_edit":false,"can_delete":false}', 
+    1, 
+    (CASE WHEN t.created_date IS NOT NULL THEN (UNIX_TIMESTAMP(t.created_date)-(60*60*5)-(60*30)) ELSE 0 END), 
+    (CASE WHEN t.updated_date IS NOT NULL THEN (UNIX_TIMESTAMP(t.updated_date)-(60*60*5)-(60*30)) ELSE 0 END) 
+FROM dev_salehandy.template t;
+
+# Set account_id based on the user data
+# Query OK, 223264 rows affected (39.62 sec)
+# Rows matched: 223310  Changed: 223264  Warnings: 0
+
+UPDATE account_templates at INNER JOIN user_master um ON at.user_id = um.id SET at.account_id = um.account_id;
+
+SET FOREIGN_KEY_CHECKS = 1;
